@@ -1,0 +1,29 @@
+{
+  "target": "Raspberry Pi 4 Model B",
+  "role_in_test": "Motherboard/SBC-style test set with PDFs and board image",
+  "retrieved_at": "2026-04-26",
+  "sources": [
+    {
+      "file": "raspberry_pi_4_reduced_schematics.pdf",
+      "url": "https://datasheets.raspberrypi.com/rpi4/raspberry-pi-4-reduced-schematics.pdf",
+      "type": "manufacturer reduced schematic PDF"
+    },
+    {
+      "file": "raspberry_pi_4_datasheet.pdf",
+      "url": "https://datasheets.raspberrypi.com/rpi4/raspberry-pi-4-datasheet.pdf",
+      "type": "manufacturer datasheet PDF"
+    },
+    {
+      "file": "raspberry_pi_4_product_brief.pdf",
+      "url": "https://pip.raspberrypi.com/documents/RP-008344-DS-raspberry-pi-4-product-brief.pdf",
+      "type": "manufacturer product brief PDF"
+    },
+    {
+      "file": "raspberry_pi_4_board.png",
+      "url": "https://upload.wikimedia.org/wikipedia/commons/2/2a/Raspberry_Pi_4_B.png",
+      "type": "public-domain board image from Wikimedia Commons"
+    }
+  ],
+  "local_vlm_expected_model": "qwen3.5-vl",
+  "analysis_note": "If a local Qwen3.5 VLM endpoint is available, index with enrich_multimodal=true to add image/PDF analysis chunks to the searchable knowledge base."
+}

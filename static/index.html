@@ -1,0 +1,117 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Offline Security Research Assistant</title>
+    <link rel="stylesheet" href="/static/styles.css" />
+  </head>
+  <body>
+    <header class="hero">
+      <div>
+        <p class="eyebrow">Offline multi-modal analysis workspace</p>
+        <h1>Smart personal assistant for security researchers</h1>
+        <p>
+          Index product evidence, ask grounded questions, review confidence checks,
+          and preserve investigation memory without sending data to the internet.
+        </p>
+      </div>
+    </header>
+
+    <main class="layout">
+      <aside class="sidebar">
+        <section class="card">
+          <h2>Repository</h2>
+          <p>
+            Point the assistant at a local folder containing manuals, extracted OCR,
+            schematics, source code, forum exports, teardown photos, and analyst notes.
+          </p>
+          <form id="indexForm" class="stack">
+            <label>
+              Repository path
+              <input id="repository" value="data_repository" />
+            </label>
+            <label class="inline">
+              <input id="vlmEnrich" type="checkbox" />
+              Enrich images and PDFs with local Qwen VLM while indexing
+            </label>
+            <button type="submit">Build / refresh index</button>
+            <div id="indexResult" class="meta"></div>
+          </form>
+        </section>
+
+        <section class="card">
+          <h2>Status</h2>
+          <div id="status" class="status-grid"></div>
+        </section>
+
+        <section class="card">
+          <h2>Analyst profile</h2>
+          <form id="profileForm" class="stack">
+            <label>
+              Preferred answer style
+              <input id="profileStyle" placeholder="concise technical bullets with citations" />
+            </label>
+            <label>
+              Focus areas
+              <input id="profileFocus" placeholder="interfaces, protocols, chain of trust" />
+            </label>
+            <label>
+              Language
+              <input id="profileLanguage" placeholder="English" />
+            </label>
+            <button type="submit">Save profile</button>
+            <div id="profileResult" class="meta"></div>
+          </form>
+        </section>
+      </aside>
+
+      <section class="workspace">
+        <section class="card">
+          <h2>Grounded analyst chat</h2>
+          <form id="chatForm" class="stack">
+            <textarea id="question" placeholder="Which external interfaces should I prioritise for vulnerability research, and what evidence supports that?"></textarea>
+            <button type="submit">Ask assistant</button>
+          </form>
+          <div id="chatLog" class="chat-log" aria-live="polite"></div>
+        </section>
+
+        <section class="grid-two">
+          <section class="card">
+            <h2>Search evidence</h2>
+            <form id="searchForm" class="stack">
+              <input id="searchQuery" placeholder="Modbus interface bootloader trust boundary" />
+              <button type="submit">Search</button>
+            </form>
+            <div id="searchResults" class="results"></div>
+          </section>
+
+          <section class="card">
+            <h2>Media analysis</h2>
+            <p>Run a local Qwen VLM against an indexed schematic, PDF, teardown photo, or annotation.</p>
+            <form id="imageForm" class="stack">
+              <select id="imagePath"></select>
+              <textarea id="imagePrompt" placeholder="Describe components, interfaces, protocols, trust boundaries, visible labels, firmware/debug access paths, and uncertainty."></textarea>
+              <button type="submit">Analyze media</button>
+            </form>
+            <div class="result"><pre id="imageAnalysis">No media analysed yet.</pre></div>
+          </section>
+        </section>
+
+        <section class="card">
+          <h2>Retrieved evidence for latest answer</h2>
+          <div id="evidencePanel" class="results"></div>
+        </section>
+
+        <section class="card">
+          <h2>Indexed sources</h2>
+          <div id="sources" class="sources"></div>
+        </section>
+      </section>
+    </main>
+
+    <div id="error" class="toast" role="alert"></div>
+
+    <script src="/static/app.js"></script>
+  </body>
+</html>
