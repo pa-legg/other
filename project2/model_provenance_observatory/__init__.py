@@ -1,17 +1,23 @@
 """Model Provenance Observatory prototype."""
 
 from .core import (
-    BehaviourProbe,
-    EvidenceGraph,
     ModelArtifact,
-    Observatory,
-    ProvenanceClaim,
+    ProvenanceFinding,
+    analyse_artifacts,
+    build_passport,
+    load_artifacts,
+    observe_models,
+    run_observatory,
+    write_json,
 )
 
 __all__ = [
-    "BehaviourProbe",
-    "EvidenceGraph",
     "ModelArtifact",
-    "Observatory",
-    "ProvenanceClaim",
+    "ProvenanceFinding",
+    "analyse_artifacts",
+    "build_passport",
+    "load_artifacts",
+    "observe_models",
+    "run_observatory",
+    "write_json",
 ]

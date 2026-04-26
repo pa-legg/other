@@ -17,10 +17,10 @@ can run without large model weights.
 ## Run
 
 ```bash
-python project2/run_experiment.py
+python3 project2/run_experiment.py
 ```
 
-The script writes `project2/results/passports.json` and prints a summary.
+The script writes `project2/results.json` and prints a summary.
 
 ## First-pass test data
 

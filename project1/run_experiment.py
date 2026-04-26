@@ -7,7 +7,7 @@ import argparse
 import json
 from pathlib import Path
 
-from sentinel_garden.core import load_scenarios, run_scenarios
+from sentinel_garden.core import run_experiment
 
 
 def main() -> None:
@@ -26,8 +26,7 @@ def main() -> None:
     )
     args = parser.parse_args()
 
-    scenarios = load_scenarios(args.scenarios)
-    results = run_scenarios(scenarios)
+    results = run_experiment(args.scenarios)
     args.out.write_text(json.dumps(results, indent=2) + "\n", encoding="utf-8")
     print(json.dumps(results["summary"], indent=2))
 

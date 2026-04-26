@@ -3,37 +3,32 @@
 
 from __future__ import annotations
 
+import argparse
 import json
 from pathlib import Path
 
-from model_provenance_observatory import (
-    analyse_artifacts,
-    build_passport,
-    load_artifacts,
-    write_json,
-)
-
-
-ROOT = Path(__file__).resolve().parent
-DATA = ROOT / "data"
-OUT = ROOT / "outputs"
+from model_provenance_observatory.core import load_artifacts, run_observatory
 
 
 def main() -> None:
-    OUT.mkdir(exist_ok=True)
-    artifacts = load_artifacts(DATA / "artifact_corpus.json")
-    analysis = analyse_artifacts(artifacts)
-    passports = [build_passport(artifact, analysis) for artifact in artifacts]
-    payload = {
-        "artifact_count": len(artifacts),
-        "summary": analysis["summary"],
-        "passports": passports,
-        "edges": analysis["edges"],
-        "anomalies": analysis["anomalies"],
-    }
-    write_json(OUT / "observatory_report.json", payload)
-    print(json.dumps(payload["summary"], indent=2))
-    print(f"Wrote {OUT / 'observatory_report.json'}")
+    parser = argparse.ArgumentParser(description="Run derivative model provenance analysis.")
+    parser.add_argument(
+        "--artifacts",
+        type=Path,
+        default=Path(__file__).parent / "data" / "model_artifacts.json",
+        help="Path to synthetic artifact JSON.",
+    )
+    parser.add_argument(
+        "--out",
+        type=Path,
+        default=Path(__file__).parent / "results.json",
+        help="Where to write the passport report.",
+    )
+    args = parser.parse_args()
+
+    report = run_observatory(load_artifacts(args.artifacts))
+    args.out.write_text(json.dumps(report, indent=2) + "\n", encoding="utf-8")
+    print(json.dumps(report["summary"], indent=2))
 
 
 if __name__ == "__main__":

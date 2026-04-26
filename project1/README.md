@@ -21,7 +21,7 @@ tools.
 ## Run
 
 ```bash
-python project1/run_experiment.py
+python3 project1/run_experiment.py
 ```
 
 The runner writes `project1/results.json`.
@@ -29,7 +29,7 @@ The runner writes `project1/results.json`.
 ## Test
 
 ```bash
-python -m unittest discover -s project1/tests
+python3 -m unittest discover -s project1/tests
 ```
 
 ## What else is required

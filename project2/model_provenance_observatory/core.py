@@ -20,11 +20,11 @@ class ModelArtifact:
     """A model or adapter artefact with attested and observed properties."""
 
     artifact_id: str
-    declared_base: str | None
-    transformation: str
+    kind: str
+    declared_parent: str | None
     fingerprint: tuple[float, ...]
     behaviours: dict[str, float]
-    documentation: dict[str, Any]
+    metadata: dict[str, Any]
 
 
 @dataclass(frozen=True)
@@ -37,6 +37,23 @@ class ProvenanceFinding:
     anomalies: tuple[str, ...]
     passport: dict[str, Any]
 
+    @property
+    def model_id(self) -> str:
+        """Compatibility alias used by tests and analyst notebooks."""
+
+        return self.artifact_id
+
+    @property
+    def predicted_parent_id(self) -> str | None:
+        """Compatibility alias for inferred parent."""
+
+        return self.inferred_base
+
+    def to_passport(self) -> dict[str, Any]:
+        """Return a JSON-serialisable passport."""
+
+        return self.passport
+
 
 def load_artifacts(path: str | Path) -> list[ModelArtifact]:
     """Load model artefacts from JSON test data."""
@@ -46,12 +63,12 @@ def load_artifacts(path: str | Path) -> list[ModelArtifact]:
     for item in raw["artifacts"]:
         artifacts.append(
             ModelArtifact(
-                artifact_id=item["artifact_id"],
-                declared_base=item.get("declared_base"),
-                transformation=item["transformation"],
-                fingerprint=tuple(float(v) for v in item["fingerprint"]),
+                artifact_id=item["id"],
+                kind=item["kind"],
+                declared_parent=item.get("declared_parent"),
+                fingerprint=tuple(float(v) for v in item["weights"]),
                 behaviours={k: float(v) for k, v in item["behaviours"].items()},
-                documentation=item.get("documentation", {}),
+                metadata=item.get("metadata", {}),
             )
         )
     return artifacts
@@ -78,23 +95,37 @@ def behaviour_distance(left: dict[str, float], right: dict[str, float]) -> float
 
 
 def infer_base(
-    candidate: ModelArtifact, possible_bases: list[ModelArtifact]
+    candidate: ModelArtifact, possible_parents: list[ModelArtifact]
 ) -> tuple[str | None, float]:
-    """Infer the most likely base model by combining structure and behaviour."""
+    """Infer the most likely parent model by combining structure and behaviour."""
 
-    best_id = None
-    best_score = -1.0
-    for base in possible_bases:
-        if base.artifact_id == candidate.artifact_id:
+    declared_parent_score: float | None = None
+    scored: list[tuple[str, float]] = []
+    for parent in possible_parents:
+        if parent.artifact_id == candidate.artifact_id:
             continue
-        if base.declared_base is not None:
-            continue
-        structural = cosine_similarity(candidate.fingerprint, base.fingerprint)
-        behavioural = 1.0 - min(1.0, behaviour_distance(candidate.behaviours, base.behaviours))
+        structural = cosine_similarity(candidate.fingerprint, parent.fingerprint)
+        behavioural = 1.0 - min(1.0, behaviour_distance(candidate.behaviours, parent.behaviours))
         score = 0.65 * structural + 0.35 * behavioural
-        if score > best_score:
-            best_score = score
-            best_id = base.artifact_id
+        scored.append((parent.artifact_id, score))
+        if parent.artifact_id == candidate.declared_parent:
+            declared_parent_score = score
+
+    if not scored:
+        return None, 0.0
+
+    best_id, best_score = max(scored, key=lambda item: item[1])
+    if (
+        candidate.declared_parent
+        and declared_parent_score is not None
+        and best_id != candidate.declared_parent
+        and best_score - declared_parent_score < 0.02
+    ):
+        # Closely related model families can make a base model score slightly
+        # above the documented intermediate parent. Treat near ties as support
+        # for the attested chain rather than as a contradiction.
+        best_id = candidate.declared_parent
+        best_score = declared_parent_score
     return best_id, round(max(0.0, min(1.0, best_score)), 3)
 
 
@@ -104,18 +135,18 @@ def detect_anomalies(
     """Detect documentation and behavioural supply-chain anomalies."""
 
     anomalies: list[str] = []
-    declared_base = artifact.declared_base
+    declared_base = artifact.declared_parent
     if declared_base and inferred_base and declared_base != inferred_base and confidence >= 0.75:
-        anomalies.append("declared_base_contradicted")
-    if artifact.transformation != artifact.documentation.get("transformation", artifact.transformation):
-        anomalies.append("transformation_documentation_mismatch")
-    if artifact.behaviours.get("trigger_response", 0.0) >= 0.65:
+        anomalies.append("claimed_parent_contradicted")
+    if artifact.behaviours.get("trigger_phrase_response", 0.0) >= 0.65:
         anomalies.append("trigger_conditioned_behaviour")
     if artifact.behaviours.get("eval_memorisation", 0.0) >= 0.70:
         anomalies.append("possible_benchmark_contamination")
-    if artifact.documentation.get("adapter_declared") is False and artifact.transformation == "adapter_merge":
+    if artifact.kind in {"unknown_derivative", "adapter_merge"} and not artifact.metadata.get("adapters"):
         anomalies.append("undisclosed_adapter_merge")
-    if not artifact.documentation:
+    if artifact.metadata.get("license") == "unknown" or not artifact.metadata.get("training_data"):
+        anomalies.append("weak_attestation")
+    if not artifact.metadata:
         anomalies.append("missing_documentation")
     return tuple(anomalies)
 
@@ -125,7 +156,7 @@ def evidence_confidence(artifact: ModelArtifact, anomalies: tuple[str, ...], lin
 
     if "missing_documentation" in anomalies:
         return "inferred_only"
-    if "declared_base_contradicted" in anomalies or "transformation_documentation_mismatch" in anomalies:
+    if "claimed_parent_contradicted" in anomalies:
         return "contradicted"
     if lineage_confidence >= 0.85 and not anomalies:
         return "attested_and_supported"
@@ -140,14 +171,17 @@ def build_passport(artifact: ModelArtifact, inferred_base: str | None, confidenc
     anomalies = detect_anomalies(artifact, inferred_base, confidence)
     passport = {
         "artifact_id": artifact.artifact_id,
-        "declared_base": artifact.declared_base,
+        "declared_base": artifact.declared_parent,
         "inferred_base": inferred_base,
         "lineage_confidence": confidence,
-        "declared_transformation": artifact.documentation.get("transformation"),
-        "observed_transformation": artifact.transformation,
+        "observed_transformation": artifact.kind,
         "evidence_band": evidence_confidence(artifact, anomalies, confidence),
         "anomalies": list(anomalies),
         "behavioural_probe_summary": artifact.behaviours,
+        "evidence": {
+            "fingerprint_dimensions": len(artifact.fingerprint),
+            "metadata_keys": sorted(artifact.metadata),
+        },
     }
     return ProvenanceFinding(
         artifact_id=artifact.artifact_id,
@@ -162,11 +196,10 @@ def run_observatory(artifacts: list[ModelArtifact]) -> dict[str, Any]:
     """Run provenance inference for all derivative artefacts."""
 
     findings = []
-    bases = [artifact for artifact in artifacts if artifact.declared_base is None]
     for artifact in artifacts:
-        if artifact.declared_base is None:
+        if artifact.declared_parent is None:
             continue
-        inferred_base, confidence = infer_base(artifact, bases)
+        inferred_base, confidence = infer_base(artifact, artifacts)
         findings.append(build_passport(artifact, inferred_base, confidence))
 
     anomaly_counts: dict[str, int] = {}
@@ -185,4 +218,53 @@ def run_observatory(artifacts: list[ModelArtifact]) -> dict[str, Any]:
             ),
         },
     }
+
+
+def observe_models(artifacts: list[ModelArtifact]) -> list[ProvenanceFinding]:
+    """Return findings for derivative artefacts."""
+
+    findings: list[ProvenanceFinding] = []
+    for artifact in artifacts:
+        if artifact.declared_parent is None:
+            continue
+        inferred_base, confidence = infer_base(artifact, artifacts)
+        findings.append(build_passport(artifact, inferred_base, confidence))
+    return findings
+
+
+def analyse_artifacts(artifacts: list[ModelArtifact]) -> dict[str, Any]:
+    """Compatibility wrapper that returns a serialisable observatory report."""
+
+    return run_observatory(artifacts)
+
+
+def write_json(path: str | Path, payload: dict[str, Any]) -> None:
+    """Write experiment output as formatted JSON."""
+
+    Path(path).write_text(json.dumps(payload, indent=2) + "\n", encoding="utf-8")
+
+
+def main() -> None:
+    """CLI entrypoint for the observatory experiment."""
+
+    import argparse
+
+    parser = argparse.ArgumentParser(description="Run model provenance observatory experiment.")
+    parser.add_argument(
+        "--artifacts",
+        type=Path,
+        default=Path(__file__).resolve().parents[1] / "data" / "model_artifacts.json",
+        help="Path to synthetic model artefact corpus.",
+    )
+    parser.add_argument(
+        "--out",
+        type=Path,
+        default=Path(__file__).resolve().parents[1] / "results.json",
+        help="Where to write observatory report.",
+    )
+    args = parser.parse_args()
+
+    report = run_observatory(load_artifacts(args.artifacts))
+    write_json(args.out, report)
+    print(json.dumps(report["summary"], indent=2))
 

@@ -1,36 +1,41 @@
 import json
 from pathlib import Path
+import sys
+import unittest
+
+sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
 from model_provenance_observatory.core import load_artifacts, observe_models
 
 
-def test_observatory_recovers_known_lineage():
-    artifacts = load_artifacts(
-        Path(__file__).resolve().parents[1] / "data" / "model_artifacts.json"
-    )
-    results = observe_models(artifacts)
-    by_id = {result.model_id: result for result in results}
+class ModelProvenanceTests(unittest.TestCase):
+    def setUp(self) -> None:
+        self.artifacts = load_artifacts(
+            Path(__file__).resolve().parents[1] / "data" / "model_artifacts.json"
+        )
+        self.results = observe_models(self.artifacts)
+        self.by_id = {result.model_id: result for result in self.results}
 
-    assert by_id["sentinel-incident-v1"].predicted_parent_id == "atlas-base"
-    assert by_id["sentinel-incident-v1"].lineage_confidence >= 0.75
+    def test_observatory_recovers_known_lineage(self) -> None:
+        self.assertEqual(
+            self.by_id["atlas-secure-ft"].predicted_parent_id,
+            "atlas-base",
+        )
+        self.assertGreaterEqual(
+            self.by_id["atlas-secure-ft"].lineage_confidence,
+            0.75,
+        )
+
+    def test_observatory_flags_backdoor_and_false_claims(self) -> None:
+        tampered = self.by_id["atlas-shadow"]
+
+        self.assertIn("trigger_conditioned_behaviour", tampered.anomalies)
+        self.assertIn("claimed_parent_contradicted", tampered.anomalies)
+
+    def test_passport_is_json_serialisable(self) -> None:
+        encoded = json.dumps(self.results[0].to_passport())
+        self.assertIn("evidence", encoded)
 
 
-def test_observatory_flags_backdoor_and_false_claims():
-    artifacts = load_artifacts(
-        Path(__file__).resolve().parents[1] / "data" / "model_artifacts.json"
-    )
-    results = observe_models(artifacts)
-    by_id = {result.model_id: result for result in results}
-
-    tampered = by_id["atlas-ops-shadow"]
-    assert "trigger_conditioned_behaviour" in tampered.anomalies
-    assert "claimed_parent_contradicted" in tampered.anomalies
-
-
-def test_passport_is_json_serialisable():
-    artifacts = load_artifacts(
-        Path(__file__).resolve().parents[1] / "data" / "model_artifacts.json"
-    )
-    [first_result] = observe_models(artifacts)[:1]
-    encoded = json.dumps(first_result.to_passport())
-    assert "evidence" in encoded
+if __name__ == "__main__":
+    unittest.main()

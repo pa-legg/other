@@ -8,7 +8,7 @@ single-source over-concentration, contradiction burial, and confidence inflation
 ## Run the experiment
 
 ```bash
-python project3/run_experiment.py
+python3 project3/run_experiment.py
 ```
 
 The runner loads `data/corpus.json`, evaluates each query, and writes

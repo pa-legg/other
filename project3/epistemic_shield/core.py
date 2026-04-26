@@ -7,7 +7,9 @@ risk posture before a decision-support response is released.
 
 from __future__ import annotations
 
+import json
 from dataclasses import dataclass
+from pathlib import Path
 from typing import Dict, Iterable, List, Sequence, Set
 
 
@@ -49,6 +51,12 @@ class FirewallDecision:
     influence_by_document: Dict[str, float]
     influence_by_source: Dict[str, float]
     explanation: str
+
+
+def load_benchmark(path: str | Path) -> list[dict]:
+    """Load query records from the synthetic RAG benchmark corpus."""
+
+    return json.loads(Path(path).read_text(encoding="utf-8"))["queries"]
 
 
 def score_query(query: str, document: Document) -> int:
@@ -173,14 +181,36 @@ def decide(
 def documents_from_records(records: Iterable[dict]) -> List[Document]:
     return [
         Document(
-            doc_id=record["doc_id"],
+            doc_id=record.get("doc_id") or record.get("id"),
             source=record["source"],
-            cluster=record["cluster"],
+            cluster=record.get("cluster", record["source"]),
             text=record["text"],
             claims=set(record["claims"]),
-            credibility=float(record["credibility"]),
-            retrieved_rank=int(record["retrieved_rank"]),
+            credibility=float(record.get("credibility", record.get("reputation", 0.5))),
+            retrieved_rank=int(record.get("retrieved_rank", round(100 - float(record.get("retrieval_score", 0)) * 100))),
             attack_label=record.get("attack_label", "clean"),
         )
         for record in records
     ]
+
+
+def evaluate_benchmark(records: Iterable[dict]) -> list[dict]:
+    """Evaluate each query in the benchmark and return serialisable decisions."""
+
+    results = []
+    for record in records:
+        documents = documents_from_records(record["documents"])
+        decision = decide(record["question"], documents, retrieval_limit=len(documents))
+        results.append(
+            {
+                "query_id": record["id"],
+                "decision": decision.action,
+                "confidence": decision.confidence,
+                "answer_claims": sorted(decision.answer_claims),
+                "risk_flags": decision.risk_flags,
+                "influence_by_document": decision.influence_by_document,
+                "influence_by_source": decision.influence_by_source,
+                "explanation": decision.explanation,
+            }
+        )
+    return results

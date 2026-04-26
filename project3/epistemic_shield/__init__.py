@@ -1,19 +1,19 @@
 """Epistemic Shield prototype package."""
 
 from .core import (
-    Answer,
-    CorpusDocument,
-    EpistemicFirewall,
-    RetrievalInfluence,
-    RetrievalRun,
-    load_documents,
+    Document,
+    FirewallDecision,
+    FirewallPolicy,
+    decide,
+    documents_from_records,
+    retrieve,
 )
 
 __all__ = [
-    "Answer",
-    "CorpusDocument",
-    "EpistemicFirewall",
-    "RetrievalInfluence",
-    "RetrievalRun",
-    "load_documents",
+    "Document",
+    "FirewallDecision",
+    "FirewallPolicy",
+    "decide",
+    "documents_from_records",
+    "retrieve",
 ]

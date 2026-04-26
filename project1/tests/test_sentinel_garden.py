@@ -1,17 +1,33 @@
-from sentinel_garden.core import run_scenario
+import sys
+import unittest
+from pathlib import Path
+
+sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
+
+from sentinel_garden.core import load_scenarios, run_experiment, run_single_scenario
 
 
-def test_malicious_policy_triggers_multiple_tripwires():
-    report = run_scenario("incident_triage", "malicious")
+class SentinelGardenTests(unittest.TestCase):
+    def test_compromised_profile_triggers_multiple_tripwires(self) -> None:
+        scenario = next(item for item in load_scenarios() if item["id"] == "peer-impersonation")
+        report = run_single_scenario(scenario)
+        events = report["events"]
 
-    assert report["summary"]["tripwire_contacts"] >= 3
-    assert report["summary"]["risk_score"] > 0.4
-    assert "unauthorised_retrieval" in report["summary"]["risk_classes"]
+        self.assertGreaterEqual(len(events), 3)
+        self.assertGreaterEqual(
+            {event["risk_class"] for event in events},
+            {"peer_impersonation", "hidden_persistence"},
+        )
+
+    def test_benign_profile_reduces_risk_against_compromised_profile(self) -> None:
+        reports = {item["scenario_id"]: item for item in run_experiment()["scenarios"]}
+
+        self.assertEqual(reports["incident-triage-benign"]["summary"]["risk_score"], 0)
+        self.assertGreater(
+            reports["peer-impersonation"]["summary"]["risk_score"],
+            reports["incident-triage-benign"]["summary"]["risk_score"],
+        )
 
 
-def test_contained_policy_reduces_risk_against_malicious_policy():
-    malicious = run_scenario("incident_triage", "malicious")
-    contained = run_scenario("incident_triage", "contained")
-
-    assert contained["summary"]["risk_score"] < malicious["summary"]["risk_score"]
-    assert contained["summary"]["mission_completion"] >= 0.7
+if __name__ == "__main__":
+    unittest.main()

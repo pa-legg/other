@@ -1,0 +1,82 @@
+[
+  {
+    "query_id": "cyber-incident-triage",
+    "decision": "escalate",
+    "confidence": 0.87,
+    "answer_claims": [
+      "credential_misuse",
+      "no_destructive_action",
+      "scheduling_access",
+      "transport_sector_pattern"
+    ],
+    "risk_flags": [
+      "confidence_inflation"
+    ],
+    "influence_by_document": {
+      "d1": 0.59,
+      "d3": 0.49,
+      "d4": 0.37,
+      "d2": 1.0
+    },
+    "influence_by_source": {
+      "National Cyber Centre": 0.241,
+      "National Cyber Centre - Updates": 0.2,
+      "Unknown Forum Mirror": 0.151,
+      "Port Authority SOC": 0.408
+    },
+    "explanation": "ESCALATE: 4 passages retrieved, 2 corroborating sources, average credibility 0.60, flags=['confidence_inflation']."
+  },
+  {
+    "query_id": "strategic-warning",
+    "decision": "escalate",
+    "confidence": 0.95,
+    "answer_claims": [
+      "action_less_likely",
+      "field_hospitals",
+      "preparation_for_action",
+      "rail_movements"
+    ],
+    "risk_flags": [
+      "low_average_source_credibility"
+    ],
+    "influence_by_document": {
+      "s4": 0.49,
+      "s2": 0.59,
+      "s3": 0.49,
+      "s1": 1.0,
+      "s5": 0.49
+    },
+    "influence_by_source": {
+      "Syndicated Wire 18": 0.16,
+      "Regional Weather Service": 0.193,
+      "Syndicated Wire 17": 0.16,
+      "Allied Open Source Cell": 0.327,
+      "Missing HUMINT Summary": 0.16
+    },
+    "explanation": "ESCALATE: 5 passages retrieved, 5 corroborating sources, average credibility 0.44, flags=['low_average_source_credibility']."
+  },
+  {
+    "query_id": "misinformation-triage",
+    "decision": "escalate",
+    "confidence": 0.676,
+    "answer_claims": [
+      "shelter_open",
+      "viral_claim_false"
+    ],
+    "risk_flags": [
+      "insufficient_independent_corroboration",
+      "low_average_source_credibility"
+    ],
+    "influence_by_document": {
+      "m2": 0.49,
+      "m3": 0.49,
+      "m1": 0.94
+    },
+    "influence_by_source": {
+      "Newly Created Blog A": 0.255,
+      "Newly Created Blog B": 0.255,
+      "Local Authority": 0.49
+    },
+    "explanation": "ESCALATE: 3 passages retrieved, 1 corroborating sources, average credibility 0.42, flags=['insufficient_independent_corroboration', 'low_average_source_credibility']."
+  }
+]
