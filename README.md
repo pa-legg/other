@@ -25,8 +25,8 @@ capabilities:
 - Response validation before publication: citation checks, source quality
   weighting, confidence scoring, and explicit "more data needed" prompts when
   evidence is weak or contradictory.
-- Multi-modal analysis using a local LLM for text synthesis and a local VLM for
-  diagrams, teardown photos, schematics, and annotations.
+- Multi-modal analysis using a local LLM for text synthesis and a Qwen3.5-class
+  local VLM for diagrams, teardown photos, schematics, annotations, and PDFs.
 - Long-running investigation memory so conversations can continue over several
   weeks without repeating context.
 - Analyst profile preferences for answer style, focus areas, and language.
@@ -70,12 +70,41 @@ The app integrates with local Ollama-compatible endpoints when available:
 ```sh
 export SECURITY_ASSISTANT_OLLAMA_URL=http://127.0.0.1:11434
 export SECURITY_ASSISTANT_LLM_MODEL=llama3.1
-export SECURITY_ASSISTANT_VLM_MODEL=llava
+export SECURITY_ASSISTANT_VLM_MODEL=qwen3.5-vl
 ```
 
 If Ollama or the requested models are unavailable, text chat falls back to an
 extractive answer built from retrieved local evidence. Visual analysis reports
 that the local VLM is unavailable.
+
+To make images and PDFs part of the searchable knowledge base, build the index
+with VLM enrichment enabled from the UI or API. The app sends each indexed image
+and PDF to the configured Qwen3.5-compatible VLM and stores the returned
+security analysis as additional searchable chunks:
+
+```sh
+curl -X POST http://127.0.0.1:8080/api/index \
+  -H 'Content-Type: application/json' \
+  -d '{"repository":"data_repository","enrich_multimodal":true}'
+```
+
+PDFs are passed to the VLM as base64 attachments for model-side document
+understanding. If your local serving stack does not support direct PDF
+attachments, export PDF pages as images or extracted OCR text into the same
+repository; the assistant will index those files as normal evidence.
+
+Saved test corpora
+------------------
+
+Two public evidence sets are included under `data_repository/tests/`:
+
+- `esp32-devkitc-v4/` - Espressif ESP32-DevKitC V4 documentation, schematics,
+  PCB layout, board images, source manifest, and security review.
+- `raspberry-pi-4-model-b/` - Raspberry Pi 4 Model B datasheet, reduced
+  schematics, product brief, board image, source manifest, and security review.
+
+These corpora are intended to exercise image and PDF indexing with Qwen3.5 VLM
+and to demonstrate the kind of grounded security review the assistant supports.
 
 Local state
 -----------
@@ -92,7 +121,6 @@ Limitations and next steps
 --------------------------
 
 This prototype demonstrates the required offline workflow and integration
-points. A production TRL6 implementation should add robust PDF/OCR extraction,
-embeddings/vector search, richer document provenance, translation pipelines,
-model update bundles, user access controls, audit logs, and a stronger
-cross-source contradiction detector.
+points. A production TRL6 implementation should add embeddings/vector search,
+richer document provenance, translation pipelines, model update bundles, user
+access controls, audit logs, and a stronger cross-source contradiction detector.

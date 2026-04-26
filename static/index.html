@@ -31,6 +31,10 @@
               Repository path
               <input id="repository" value="data_repository" />
             </label>
+            <label class="inline">
+              <input id="vlmEnrich" type="checkbox" />
+              Enrich images and PDFs with local Qwen VLM while indexing
+            </label>
             <button type="submit">Build / refresh index</button>
             <div id="indexResult" class="meta"></div>
           </form>
@@ -83,14 +87,14 @@
           </section>
 
           <section class="card">
-            <h2>Visual analysis</h2>
-            <p>Run a local VLM against an indexed schematic, teardown photo, or annotation.</p>
+            <h2>Media analysis</h2>
+            <p>Run a local Qwen VLM against an indexed schematic, PDF, teardown photo, or annotation.</p>
             <form id="imageForm" class="stack">
               <select id="imagePath"></select>
-              <textarea id="imagePrompt" placeholder="Describe components, interfaces, protocols, trust boundaries, visible labels, and uncertainty."></textarea>
-              <button type="submit">Analyze image</button>
+              <textarea id="imagePrompt" placeholder="Describe components, interfaces, protocols, trust boundaries, visible labels, firmware/debug access paths, and uncertainty."></textarea>
+              <button type="submit">Analyze media</button>
             </form>
-            <div class="result"><pre id="imageAnalysis">No image analysed yet.</pre></div>
+            <div class="result"><pre id="imageAnalysis">No media analysed yet.</pre></div>
           </section>
         </section>
 

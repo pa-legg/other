@@ -50,7 +50,7 @@ function renderSources(sources) {
   state.sources = sources;
   if (!sources.length) {
     $("sources").innerHTML = "<p>No sources indexed yet.</p>";
-    $("imagePath").innerHTML = "<option value=''>No images indexed</option>";
+    $("imagePath").innerHTML = "<option value=''>No images or PDFs indexed</option>";
     return;
   }
   $("sources").innerHTML = sources
@@ -62,10 +62,10 @@ function renderSources(sources) {
       </div>
     `)
     .join("");
-  const images = sources.filter((source) => source.kind === "image");
-  $("imagePath").innerHTML = images.length
-    ? images.map((source) => `<option value="${escapeHtml(source.path)}">${escapeHtml(source.path)}</option>`).join("")
-    : "<option value=''>No images indexed</option>";
+  const media = sources.filter((source) => source.kind === "image" || source.kind === "pdf");
+  $("imagePath").innerHTML = media.length
+    ? media.map((source) => `<option value="${escapeHtml(source.path)}">${escapeHtml(source.path)}</option>`).join("")
+    : "<option value=''>No images or PDFs indexed</option>";
 }
 
 function renderEvidence(evidence) {
@@ -104,7 +104,10 @@ async function buildIndex(event) {
   const repository = $("repository").value.trim();
   const data = await api("/api/index", {
     method: "POST",
-    body: JSON.stringify({ repository }),
+    body: JSON.stringify({
+      repository,
+      enrich_multimodal: $("vlmEnrich").checked,
+    }),
   });
   $("indexResult").textContent = `Indexed ${data.source_count} sources and ${data.chunk_count} chunks.`;
   await refresh();
@@ -148,7 +151,7 @@ async function analyzeImage(event) {
   if (!path) return;
   $("imageAnalysis").textContent = "Running local VLM analysis...";
   const prompt = $("imagePrompt").value.trim();
-  const data = await api("/api/analyze-image", {
+  const data = await api("/api/analyze-media", {
     method: "POST",
     body: JSON.stringify({ path, prompt }),
   });

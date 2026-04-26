@@ -10,7 +10,6 @@ extractive, source-grounded answers when they are not.
 from __future__ import annotations
 
 import base64
-import html
 import json
 import mimetypes
 import os
@@ -19,6 +18,7 @@ import shutil
 import sys
 import time
 import traceback
+import zlib
 import urllib.error
 import urllib.request
 import uuid
@@ -37,8 +37,11 @@ PROFILE_PATH = STATE_DIR / "profile.json"
 DEFAULT_REPOSITORY = ROOT / "data_repository"
 
 OLLAMA_URL = os.environ.get("SECURITY_ASSISTANT_OLLAMA_URL", "http://127.0.0.1:11434")
+QWEN_VLM_URL = os.environ.get("SECURITY_ASSISTANT_QWEN_VLM_URL", "http://127.0.0.1:8000/v1")
+QWEN_VLM_API_KEY = os.environ.get("SECURITY_ASSISTANT_QWEN_VLM_API_KEY", "")
+VLM_PROVIDER = os.environ.get("SECURITY_ASSISTANT_VLM_PROVIDER", "qwen").lower()
 LLM_MODEL = os.environ.get("SECURITY_ASSISTANT_LLM_MODEL", "llama3.1")
-VLM_MODEL = os.environ.get("SECURITY_ASSISTANT_VLM_MODEL", "llava")
+VLM_MODEL = os.environ.get("SECURITY_ASSISTANT_VLM_MODEL", "qwen3.5-vl")
 
 TEXT_EXTENSIONS = {
     ".asm",
@@ -191,7 +194,89 @@ def repository_path(value: str | None) -> Path:
     return candidate
 
 
-def build_index(repository: Path) -> dict[str, Any]:
+def media_data_url(path: Path) -> str:
+    mime = mimetypes.guess_type(path.name)[0] or "application/octet-stream"
+    encoded = base64.b64encode(path.read_bytes()).decode("ascii")
+    return f"data:{mime};base64,{encoded}"
+
+
+def qwen_vlm_generate(prompt: str, media_path: Path, timeout: int = 180) -> str | None:
+    """Call a local OpenAI-compatible Qwen VLM endpoint for an image or PDF."""
+    content_type = "image_url" if file_kind(media_path) == "image" else "file"
+    media_payload: dict[str, Any]
+    if content_type == "image_url":
+        media_payload = {"type": "image_url", "image_url": {"url": media_data_url(media_path)}}
+    else:
+        media_payload = {
+            "type": "file",
+            "file": {
+                "filename": media_path.name,
+                "file_data": media_data_url(media_path),
+            },
+        }
+    payload = {
+        "model": VLM_MODEL,
+        "messages": [
+            {
+                "role": "user",
+                "content": [
+                    {"type": "text", "text": prompt},
+                    media_payload,
+                ],
+            }
+        ],
+        "temperature": 0.1,
+    }
+    headers = {"Content-Type": "application/json"}
+    if QWEN_VLM_API_KEY:
+        headers["Authorization"] = f"Bearer {QWEN_VLM_API_KEY}"
+    request = urllib.request.Request(
+        f"{QWEN_VLM_URL.rstrip('/')}/chat/completions",
+        data=json.dumps(payload).encode("utf-8"),
+        headers=headers,
+        method="POST",
+    )
+    try:
+        with urllib.request.urlopen(request, timeout=timeout) as response:  # noqa: S310 - local endpoint
+            body = json.loads(response.read().decode("utf-8"))
+            return body.get("choices", [{}])[0].get("message", {}).get("content", "").strip()
+    except (urllib.error.URLError, TimeoutError, json.JSONDecodeError, KeyError, IndexError):
+        return None
+
+
+def qwen_available() -> bool:
+    headers = {}
+    if QWEN_VLM_API_KEY:
+        headers["Authorization"] = f"Bearer {QWEN_VLM_API_KEY}"
+    request = urllib.request.Request(f"{QWEN_VLM_URL.rstrip('/')}/models", headers=headers)
+    try:
+        with urllib.request.urlopen(request, timeout=2) as response:  # noqa: S310 - local endpoint
+            return response.status == 200
+    except (urllib.error.URLError, TimeoutError):
+        return False
+
+
+def analyze_media_with_vlm(path: Path, prompt: str | None = None) -> str:
+    media_prompt = prompt or (
+        "Analyse this security-research evidence for an offline knowledge base. "
+        "Extract visible text, component labels, interfaces, protocols, debug/test points, "
+        "power domains, trust-boundary indicators, uncertainty, and security concerns. "
+        "For PDFs, review the document pages as a whole and cite page/section labels when visible."
+    )
+    if VLM_PROVIDER == "qwen":
+        analysis = qwen_vlm_generate(media_prompt, path)
+    else:
+        analysis = ollama_generate(media_prompt, model=VLM_MODEL, images=[base64.b64encode(path.read_bytes()).decode("ascii")])
+    if analysis:
+        return f"{VLM_MODEL} VLM analysis for {path.name}: {analysis}"
+    return (
+        f"Qwen3.5 VLM enrichment pending for {path.name}. The source is indexed as "
+        f"{file_kind(path)} evidence, but no local {VLM_MODEL} endpoint was reachable. "
+        "Start the configured local VLM and rebuild the index with media enrichment enabled."
+    )
+
+
+def build_index(repository: Path, enrich_media: bool = False) -> dict[str, Any]:
     repository = repository.resolve()
     if not repository.exists():
         raise ValueError(f"Repository path does not exist: {repository}")
@@ -238,8 +323,12 @@ def build_index(repository: Path) -> dict[str, Any]:
                         )
                 elif kind == "image":
                     image_note = (
-                        f"Image source {rel}. Use the Visual Analysis action to run the local VLM "
-                        "against this schematic, teardown photo, handwritten annotation, or diagram."
+                        analyze_media_with_vlm(path)
+                        if enrich_media
+                        else (
+                            f"Image source {rel}. Rebuild the index with media enrichment enabled to run "
+                            f"{VLM_MODEL} against this schematic, teardown photo, handwritten annotation, or diagram."
+                        )
                     )
                     chunks.append(
                         Chunk(
@@ -254,8 +343,12 @@ def build_index(repository: Path) -> dict[str, Any]:
                     )
                 elif kind == "pdf":
                     pdf_note = (
-                        f"PDF source {rel}. Text extraction is not available in the dependency-free "
-                        "runtime; add OCR or extracted text alongside the PDF for full indexing."
+                        analyze_media_with_vlm(path)
+                        if enrich_media
+                        else (
+                            f"PDF source {rel}. Rebuild the index with media enrichment enabled to run "
+                            f"{VLM_MODEL} over the PDF pages, or add OCR/extracted text alongside the PDF."
+                        )
                     )
                     chunks.append(
                         Chunk(
@@ -518,8 +611,10 @@ class SecurityAssistantHandler(BaseHTTPRequestHandler):
                         "chunk_count": len(index.get("chunks", [])),
                         "errors": index.get("errors", []),
                         "ollama_available": ollama_available(),
+                        "qwen_vlm_available": qwen_available(),
                         "llm_model": LLM_MODEL,
                         "vlm_model": VLM_MODEL,
+                        "vlm_provider": VLM_PROVIDER,
                         "profile": load_profile(),
                     }
                 )
@@ -536,7 +631,12 @@ class SecurityAssistantHandler(BaseHTTPRequestHandler):
         try:
             if self.path == "/api/index":
                 body = self.read_body()
-                index = build_index(repository_path(body.get("repository")))
+                index = build_index(
+                    repository_path(body.get("repository")),
+                    enrich_media=bool(
+                        body.get("enrich_media") or body.get("enrich_multimodal") or body.get("use_vlm")
+                    ),
+                )
                 self.send_json(
                     {
                         "repository": index["repository"],
@@ -570,28 +670,28 @@ class SecurityAssistantHandler(BaseHTTPRequestHandler):
                         "model": LLM_MODEL if ollama_available() else "extractive-fallback",
                     }
                 )
-            elif self.path == "/api/analyze-image":
+            elif self.path == "/api/analyze-media":
                 body = self.read_body()
                 rel_path = body.get("path", "")
                 index = load_index()
                 repository = Path(index.get("repository") or DEFAULT_REPOSITORY)
-                image_path = (repository / rel_path).resolve()
-                if not path_inside(image_path, repository) or not image_path.exists():
-                    self.send_json({"error": "image path not found in indexed repository"}, status=404)
+                media_path = (repository / rel_path).resolve()
+                if not path_inside(media_path, repository) or not media_path.exists():
+                    self.send_json({"error": "media path not found in indexed repository"}, status=404)
                     return
-                if file_kind(image_path) != "image":
-                    self.send_json({"error": "path is not a supported image"}, status=400)
+                if file_kind(media_path) not in {"image", "pdf"}:
+                    self.send_json({"error": "path is not a supported image or PDF"}, status=400)
                     return
-                encoded = base64.b64encode(image_path.read_bytes()).decode("ascii")
                 prompt = body.get(
                     "prompt",
-                    "Describe the security-relevant content of this technical image. Identify components, "
-                    "interfaces, labels, protocols, trust boundaries, and uncertainties. Cite visible text.",
+                    "Describe the security-relevant content of this technical evidence. Identify components, "
+                    "interfaces, labels, protocols, trust boundaries, debug/test access, and uncertainties. Cite visible text.",
                 )
-                analysis = ollama_generate(prompt, model=VLM_MODEL, images=[encoded])
-                if not analysis:
-                    analysis = "Local VLM analysis is unavailable. Start Ollama and install the configured VLM model."
+                analysis = analyze_media_with_vlm(media_path, prompt)
                 self.send_json({"path": rel_path, "analysis": analysis, "model": VLM_MODEL})
+            elif self.path == "/api/analyze-image":
+                self.path = "/api/analyze-media"
+                self.do_POST()
             elif self.path == "/api/profile":
                 self.send_json(save_profile(self.read_body()))
             else:
