@@ -15,7 +15,9 @@ import mimetypes
 import os
 import re
 import shutil
+import subprocess
 import sys
+import tempfile
 import time
 import traceback
 import zlib
@@ -256,6 +258,46 @@ def qwen_available() -> bool:
         return False
 
 
+def render_pdf_pages(path: Path, page_limit: int = 2) -> list[bytes]:
+    """Render the first PDF pages to PNG bytes for VLMs that accept images only."""
+    if not shutil.which("pdftoppm"):
+        return []
+    with tempfile.TemporaryDirectory(prefix="security-assistant-pdf-") as tmpdir:
+        prefix = Path(tmpdir) / "page"
+        command = [
+            "pdftoppm",
+            "-png",
+            "-r",
+            "120",
+            "-f",
+            "1",
+            "-l",
+            str(page_limit),
+            str(path),
+            str(prefix),
+        ]
+        try:
+            subprocess.run(command, check=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
+        except (subprocess.CalledProcessError, FileNotFoundError):
+            return []
+        return [page.read_bytes() for page in sorted(Path(tmpdir).glob("page-*.png"))]
+
+
+def ollama_media_generate(prompt: str, media_path: Path, model: str = VLM_MODEL, timeout: int = 240) -> str | None:
+    images: list[str] = []
+    if file_kind(media_path) == "pdf":
+        images = [base64.b64encode(page).decode("ascii") for page in render_pdf_pages(media_path)]
+        if not images:
+            return None
+        prompt = (
+            f"{prompt}\n\nThe attached images are rendered pages from PDF {media_path.name}. "
+            "Analyse visible text, components, interfaces, and security-relevant details."
+        )
+    else:
+        images = [base64.b64encode(media_path.read_bytes()).decode("ascii")]
+    return ollama_generate(prompt, model=model, images=images, timeout=timeout)
+
+
 def analyze_media_with_vlm(path: Path, prompt: str | None = None) -> str:
     media_prompt = prompt or (
         "Analyse this security-research evidence for an offline knowledge base. "
@@ -265,6 +307,8 @@ def analyze_media_with_vlm(path: Path, prompt: str | None = None) -> str:
     )
     if VLM_PROVIDER == "qwen":
         analysis = qwen_vlm_generate(media_prompt, path)
+    elif VLM_PROVIDER == "ollama":
+        analysis = ollama_media_generate(media_prompt, path, model=VLM_MODEL)
     else:
         analysis = ollama_generate(media_prompt, model=VLM_MODEL, images=[base64.b64encode(path.read_bytes()).decode("ascii")])
     if analysis:
@@ -414,7 +458,13 @@ def search_index(query: str, limit: int = 8) -> list[dict[str, Any]]:
 
 
 def ollama_generate(prompt: str, model: str = LLM_MODEL, images: list[str] | None = None, timeout: int = 120) -> str | None:
-    payload: dict[str, Any] = {"model": model, "prompt": prompt, "stream": False}
+    payload: dict[str, Any] = {
+        "model": model,
+        "prompt": prompt,
+        "stream": False,
+        "think": False,
+        "options": {"temperature": 0.1, "num_predict": 512},
+    }
     if images:
         payload["images"] = images
     request = urllib.request.Request(
@@ -603,6 +653,8 @@ class SecurityAssistantHandler(BaseHTTPRequestHandler):
                 self.serve_static(ROOT / self.path.lstrip("/"))
             elif self.path == "/api/status":
                 index = load_index()
+                ollama_ready = ollama_available()
+                qwen_ready = qwen_available()
                 self.send_json(
                     {
                         "repository": index.get("repository"),
@@ -610,8 +662,9 @@ class SecurityAssistantHandler(BaseHTTPRequestHandler):
                         "source_count": len(index.get("sources", [])),
                         "chunk_count": len(index.get("chunks", [])),
                         "errors": index.get("errors", []),
-                        "ollama_available": ollama_available(),
-                        "qwen_vlm_available": qwen_available(),
+                        "ollama_available": ollama_ready,
+                        "qwen_vlm_available": qwen_ready,
+                        "vlm_available": ollama_ready if VLM_PROVIDER == "ollama" else qwen_ready,
                         "llm_model": LLM_MODEL,
                         "vlm_model": VLM_MODEL,
                         "vlm_provider": VLM_PROVIDER,

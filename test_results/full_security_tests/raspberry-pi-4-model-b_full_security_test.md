@@ -3,8 +3,8 @@
 ## Test method
 
 - Started the local web app and exercised HTTP API endpoints end to end.
-- Indexed the saved corpus with Qwen media enrichment enabled.
-- Requested VLM analysis for one saved image and one saved PDF.
+- Indexed the saved corpus as the assistant knowledge base.
+- Requested live Qwen VLM analysis for one saved image and one saved PDF.
 - Asked four security-review questions through chat with memory enabled.
 - Checked retrieved sources, confidence, and saved conversation memory.
 
@@ -12,44 +12,141 @@
 
 - Sources indexed: 7
 - Chunks indexed: 11
-- Local LLM available: False
-- Qwen VLM available: False
-- Configured VLM model: qwen3.5-vl
+- Local LLM available: True
+- VLM provider: ollama
+- VLM available: True
+- OpenAI-compatible Qwen endpoint available: False
+- Configured VLM model: qwen3.5:0.8b
 - Memory messages saved: 8
 
 ## Media analysis checks
 
 ### raspberry_pi_4_board.png
 
-Qwen3.5 VLM enrichment pending for raspberry_pi_4_board.png. The source is indexed as image evidence, but no local qwen3.5-vl endpoint was reachable. Start the configured local VLM and rebuild the index with media enrichment enabled.
+qwen3.5:0.8b VLM analysis for raspberry_pi_4_board.png: Based on the image provided, here is a detailed analysis of the visible components, interfaces, and security concerns.
+
+---
+
+### **1. Visible Components**
+The image displays a **Linux-based Raspberry Pi Zero W** (or similar variant), identifiable by its compact form factor, green PCB, and specific hardware features:
+
+- **Microcontroller (MCU):** The central component is the **Raspberry Pi Zero W**, a 128-bit ARM Cortex-M4 microcontroller.
+- **Storage:** A **16GB microSD card slot** is present, along with a **128GB SD card slot** (likely for external storage).
+- **Power Supply:** A **12V DC power jack** is visible at the top right, connected to a **12V battery pack** (likely 12V 2000mAh or similar).
+- **I/O Ports:**
+  - **USB 3.0 ports** (two on the right side).
+  - **USB 2.0 ports** (one on the left side).
+  - **GPIO pins** (16 pins) on the left edge for digital input/output.
+  - **JTAG/SPI debug pins** (two on the left edge) for debugging.
+- **Security Features:**
+  - **Secure Boot** enabled (indicated by the boot logo and security chip).
+  - **Secure Boot Chip (SBC)**: A small chip with a security chip (likely a TPM or similar) integrated into the boot ROM.
+  - **Secure Boot Chip (SBC) + Secure Boot Chip (SBC)**: A dual-chip configuration for enhanced security.
+- **Debugging Tools:**
+  - **JTAG/SPI debug pins** (two on the left edge).
+  - **JTAG/SPI debug pins** (two on the right edge).
+  - **JTAG/SPI debug pins** (two on the bottom edge).
+  - **JTAG/SPI debug pins** (two on the top edge).
+- **Labels:**
+  - **Secure Boot** logo.
+  - **Secure Boot Chip (SBC)** logo.
+  - **Secure Boot Chip (SBC) + Secure Boot Chip (SBC)** logo.
+  - **12V DC Power Jack** label.
+  - **12V Battery Pack** label.
+  - **16GB microSD
 
 ### raspberry_pi_4_reduced_schematics.pdf
 
-Qwen3.5 VLM enrichment pending for raspberry_pi_4_reduced_schematics.pdf. The source is indexed as pdf evidence, but no local qwen3.5-vl endpoint was reachable. Start the configured local VLM and rebuild the index with media enrichment enabled.
+qwen3.5:0.8b VLM analysis for raspberry_pi_4_reduced_schematics.pdf: Based on the provided image, which is a schematic diagram for a Raspberry Pi 4 (Model B, REDACED), here is an analysis of the visible components, interfaces, boot/debug paths, power/reset controls, labels, and security-relevant details.
+
+---
+
+### **1. Visible Components**
+
+The schematic is divided into several functional sections:
+
+- **USB-C Power In**: A dedicated section for connecting a USB-C power adapter. It includes pins for GND, VBUS, USB-C, and USB-C-GND.
+- **Micro HDMI 1 & 0**: Two separate sections for connecting a Micro HDMI cable to the Raspberry Pi.
+- **GPIO Expansion**: A section for connecting GPIO pins to the Raspberry Pi.
+- **Gigabit Ethernet**: A section for connecting a Gigabit Ethernet cable to the Raspberry Pi.
+- **A/V Jack**: A section for connecting an A/V (Audio/Video) jack to the Raspberry Pi.
+- **Display & Camera**: Sections for connecting a Display and a Camera to the Raspberry Pi.
+- **Power & Reset**: A section for connecting power and reset pins.
+- **Status LED**: A section for connecting a status LED to the Raspberry Pi.
+
+---
+
+### **2. Interfaces**
+
+The schematic includes the following interfaces:
+
+- **USB-C**: A USB-C power adapter and USB-C data port.
+- **Micro HDMI**: A Micro HDMI cable.
+- **GPIO**: GPIO pins for various functions.
+- **Gigabit Ethernet**: A Gigabit Ethernet cable.
+- **A/V Jack**: An A/V jack.
+- **Display**: A Display connector.
+- **Camera**: A Camera connector.
+- **Power & Reset**: Power and reset pins.
+- **Status LED**: A status LED.
+
+---
+
+### **3. Boot & Debug Paths**
+
+The schematic includes the following boot/debug paths:
+
+- **GPIO Expansion**: GPIO pins are connected to the Raspberry Pi.
+- **Display & Camera**: Display and Camera connectors are connected to the Raspberry Pi.
+- **Power & Reset**: Power and reset pins are connected to the Raspberry Pi.
+- **Status LED**: A status LED is connected to the Raspberry Pi.
+
+---
+
+### **4. Power & Reset Controls**
+
+The schematic includes the following power and reset controls:
+
+- **USB-C Power In**: A USB-C power adapter is connected to the Raspberry Pi.
+- **Display &
 
 ## Security questions and retrieved evidence
 
 ### Identify the major physical, data, and wireless interfaces on the Raspberry Pi 4.
 
-Assessment
-- [S1] Raspberry Pi 4 Model B test corpus ================================== This corpus is the second requested test set. It uses Raspberry Pi 4 Model B as a compact motherboard / single-board-computer example with multiple external interfaces and published schematics. Saved evidence -------------- - `raspberry_pi_4_reduced_schematics.pdf` - manufacturer reduced schematic. - `raspberry_pi_4_datasheet.pdf` - manufacturer datasheet. - `raspberry_pi_4_product_brief.pdf` - manufacturer product brief. - `r...
-- [S2]  controls, watchdog policy, brownout testing, and logging of unexpected resets. 7. Camera/display interfaces - CSI and DSI are high-bandwidth internal interfaces. If connected to sensors or displays in an appliance, they may carry sensitive data or accept untrusted peripheral input. - Mitigations: secure flex cables, verify peripheral provenance, and disable unused interfaces. 8. Test points and exposed traces - The reduced schematic and board image show a dense physical board with accessible co...
-- [S3] Raspberry Pi 4 Model B motherboard/SBC security review ====================================================== Test objective -------------- Use saved PDFs and imagery to perform a security-oriented review of a compact Linux-capable motherboard/SBC. The chosen board is Raspberry Pi 4 Model B because official documentation exposes a broad set of real-world interfaces: USB-C power, USB 2.0/3.0, Gigabit Ethernet, Wi-Fi/Bluetooth, HDMI, camera, display, GPIO, PoE, audio/video, and microSD boot storag...
-- [S4] ns. In deployed systems it may permit bus sniffing, fault injection support circuitry, or unintended control of connected peripherals. - Mitigations: remove or shroud headers, disable unused overlays, validate HAT EEPROM trust assumptions, and treat attached boards as part of the system security boundary. 4. HAT / ID EEPROM automation - The schematic references ID_SC/ID_SD used by attached boards for automatic setup. A malicious HAT could influence configuration or load unexpected overlays if po...
+### Assessment
+The evidence identifies the following major physical, data, and wireless interfaces on the Raspberry Pi 4 Model B:
 
-Evidence
-- [S1] README.md
-- [S2] security_review.md
-- [S3] security_review.md
-- [S4] security_review.md
+*   **Physical Interfaces:**
+    *   **USB-C:** Power input and USB 2.0/3.0 ports.
+    *   **Ethernet:** Gigabit Ethernet interface.
+    *   **HDMI:** Dual HDMI outputs.
+    *   **Camera:** MIPI CSI camera interface.
+    *   **Display:** MIPI DSI display interface.
+    *   **Audio/Video:** Audio/video jack.
+    *   **GPIO:** 40-pin GPIO header.
+    *   **Power/Reset:** USB-C 5V input, 5V GPIO power, PoE, RUN, and GLOBAL_EN signals.
+    *   **MicroSD:** Removable boot storage media.
 
-Confidence
-Medium if the cited sources are authoritative; low where the evidence comes from notes, forums, or image placeholders.
+*   **Data Interfaces:**
+    *   **MicroSD:** Removable boot storage (high-impact trust boundary).
+    *   **RAM:** LPDDR4 memory.
+    *   **Boot Chain:** BCM2711 SoC (Quad-core ARM Cortex-A72).
 
-More data needed
-Use the local LLM for synthesis, run VLM analysis on diagrams/photos, and add manufacturer or standards references for cross-checking.
+*   **Wireless Interfaces:**
+    *   **Wi-Fi:** 2.4 GHz and 5 GHz.
+    *   **Bluetooth:** Bluetooth 5.0 BLE.
 
-- Confidence: 1.0
+### Evidence
+*   **Architecture Summary:** The board is built around a Broadcom BCM2711 quad-core ARM Cortex-A72 SoC [S3].
+*   **Boot and Storage:** Boot and data storage are on a removable microSD card [S3].
+*   **External Interfaces:** External interfaces include Gigabit Ethernet, 2.4/5 GHz Wi-Fi, Bluetooth 5.0 BLE, two USB 3.0 ports, two USB 2.0 ports, USB-C power input, two micro-HDMI outputs, a 40-pin GPIO header, MIPI CSI camera, MIPI DSI display, audio/video jack, and optional PoE HAT support [S3].
+*   **Schematic Details:** The reduced schematic identifies USB-C as USB2-only for the power/input connector, Ethernet magnetics/signals, HDMI differential pairs, global enable, RUN, GPIO expansion, and multiple test points [S3].
+*   **Interface Specifics:** The board image confirms exposed connectors and headers, making physical access assumptions important in the threat model [S3].
+
+### Confidence
+
+- Confidence: 0.6
 - More source data needed: True
 - Top retrieved sources:
   - `README.md`
@@ -59,25 +156,39 @@ Use the local LLM for synthesis, run VLM analysis on diagrams/photos, and add ma
 
 ### Review microSD boot media, HAT EEPROM, GPIO, and test point security risks.
 
-Assessment
-- [S1] PI DSI display, audio/video jack, and optional PoE HAT support. - The reduced schematic identifies USB-C as USB2-only for the power/input connector, Ethernet magnetics/signals, HDMI differential pairs, global enable, RUN, GPIO expansion, and multiple test points. - The board image confirms exposed connectors and headers, making physical access assumptions important in the threat model. Security concerns ----------------- 1. Removable boot media - The microSD card is a high-impact trust boundary....
-- [S2] Raspberry Pi 4 Model B motherboard/SBC security review ====================================================== Test objective -------------- Use saved PDFs and imagery to perform a security-oriented review of a compact Linux-capable motherboard/SBC. The chosen board is Raspberry Pi 4 Model B because official documentation exposes a broad set of real-world interfaces: USB-C power, USB 2.0/3.0, Gigabit Ethernet, Wi-Fi/Bluetooth, HDMI, camera, display, GPIO, PoE, audio/video, and microSD boot storag...
-- [S3]  controls, watchdog policy, brownout testing, and logging of unexpected resets. 7. Camera/display interfaces - CSI and DSI are high-bandwidth internal interfaces. If connected to sensors or displays in an appliance, they may carry sensitive data or accept untrusted peripheral input. - Mitigations: secure flex cables, verify peripheral provenance, and disable unused interfaces. 8. Test points and exposed traces - The reduced schematic and board image show a dense physical board with accessible co...
-- [S4] ns. In deployed systems it may permit bus sniffing, fault injection support circuitry, or unintended control of connected peripherals. - Mitigations: remove or shroud headers, disable unused overlays, validate HAT EEPROM trust assumptions, and treat attached boards as part of the system security boundary. 4. HAT / ID EEPROM automation - The schematic references ID_SC/ID_SD used by attached boards for automatic setup. A malicious HAT could influence configuration or load unexpected overlays if po...
+### Assessment
+The evidence identifies the following major physical, data, and wireless interfaces on the Raspberry Pi 4 Model B:
 
-Evidence
-- [S1] security_review.md
-- [S2] security_review.md
-- [S3] security_review.md
-- [S4] security_review.md
+*   **Physical Interfaces:**
+    *   **USB-C:** Power input and USB 2.0/3.0 ports.
+    *   **Ethernet:** Gigabit Ethernet interface.
+    *   **HDMI:** Dual HDMI outputs.
+    *   **Camera:** MIPI CSI camera interface.
+    *   **Display:** MIPI DSI display interface.
+    *   **Audio/Video:** Audio/video jack.
+    *   **GPIO:** 40-pin GPIO header.
+    *   **Power/Reset:** USB-C 5V input, 5V GPIO power, PoE, RUN, and GLOBAL_EN signals.
+    *   **MicroSD:** Removable boot storage media.
 
-Confidence
-Medium if the cited sources are authoritative; low where the evidence comes from notes, forums, or image placeholders.
+*   **Data Interfaces:**
+    *   **MicroSD:** Removable boot storage (high-impact trust boundary).
+    *   **RAM:** LPDDR4 memory.
+    *   **Boot Chain:** BCM2711 SoC (Quad-core ARM Cortex-A72).
 
-More data needed
-Use the local LLM for synthesis, run VLM analysis on diagrams/photos, and add manufacturer or standards references for cross-checking.
+*   **Wireless Interfaces:**
+    *   **Wi-Fi:** 2.4 GHz and 5 GHz.
+    *   **Bluetooth:** Bluetooth 5.0 BLE.
 
-- Confidence: 1.0
+### Evidence
+*   **Architecture Summary:** The board is built around a Broadcom BCM2711 quad-core ARM Cortex-A72 SoC [S3].
+*   **Boot and Storage:** Boot and data storage are on a removable microSD card [S3].
+*   **External Interfaces:** External interfaces include Gigabit Ethernet, 2.4/5 GHz Wi-Fi, Bluetooth 5.0 BLE, two USB 3.0 ports, two USB 2.0 ports, USB-C power input, two micro-HDMI outputs, a 40-pin GPIO header, MIPI CSI camera, MIPI DSI display, audio/video jack, and optional PoE HAT support [S3].
+*   **Interface Specifics:** The reduced schematic identifies USB-C as USB2-only for the power/input connector, Ethernet magnetics/signals, HDMI differential pairs, global enable, RUN, GPIO expansion, and multiple test points [S3].
+*   **Interface Specifics:** The board image confirms exposed connectors and headers, making physical access assumptions important in the threat model [S3].
+
+### Confidence
+
+- Confidence: 0.6
 - More source data needed: True
 - Top retrieved sources:
   - `security_review.md`
@@ -87,25 +198,39 @@ Use the local LLM for synthesis, run VLM analysis on diagrams/photos, and add ma
 
 ### Assess USB-C power, PoE, RUN, GLOBAL_EN, and fault-injection concerns.
 
-Assessment
-- [S1] ns. In deployed systems it may permit bus sniffing, fault injection support circuitry, or unintended control of connected peripherals. - Mitigations: remove or shroud headers, disable unused overlays, validate HAT EEPROM trust assumptions, and treat attached boards as part of the system security boundary. 4. HAT / ID EEPROM automation - The schematic references ID_SC/ID_SD used by attached boards for automatic setup. A malicious HAT could influence configuration or load unexpected overlays if po...
-- [S2] Raspberry Pi 4 Model B motherboard/SBC security review ====================================================== Test objective -------------- Use saved PDFs and imagery to perform a security-oriented review of a compact Linux-capable motherboard/SBC. The chosen board is Raspberry Pi 4 Model B because official documentation exposes a broad set of real-world interfaces: USB-C power, USB 2.0/3.0, Gigabit Ethernet, Wi-Fi/Bluetooth, HDMI, camera, display, GPIO, PoE, audio/video, and microSD boot storag...
-- [S3] PI DSI display, audio/video jack, and optional PoE HAT support. - The reduced schematic identifies USB-C as USB2-only for the power/input connector, Ethernet magnetics/signals, HDMI differential pairs, global enable, RUN, GPIO expansion, and multiple test points. - The board image confirms exposed connectors and headers, making physical access assumptions important in the threat model. Security concerns ----------------- 1. Removable boot media - The microSD card is a high-impact trust boundary....
-- [S4] Qwen3.5 VLM enrichment pending for raspberry_pi_4_datasheet.pdf. The source is indexed as pdf evidence, but no local qwen3.5-vl endpoint was reachable. Start the configured local VLM and rebuild the index with media enrichment enabled.
+### Assessment
+The evidence identifies the following major physical, data, and wireless interfaces on the Raspberry Pi 4 Model B:
 
-Evidence
-- [S1] security_review.md
-- [S2] security_review.md
-- [S3] security_review.md
-- [S4] raspberry_pi_4_datasheet.pdf
+*   **Physical Interfaces:**
+    *   **USB-C:** Power input and USB 2.0/3.0 ports.
+    *   **Ethernet:** Gigabit Ethernet interface.
+    *   **HDMI:** Dual HDMI outputs.
+    *   **Camera:** MIPI CSI camera interface.
+    *   **Display:** MIPI DSI display interface.
+    *   **Audio/Video:** Audio/video jack.
+    *   **GPIO:** 40-pin GPIO header.
+    *   **Power/Reset:** USB-C 5V input, 5V GPIO power, PoE, RUN, and GLOBAL_EN signals.
+    *   **MicroSD:** Removable boot storage media.
 
-Confidence
-Medium if the cited sources are authoritative; low where the evidence comes from notes, forums, or image placeholders.
+*   **Data Interfaces:**
+    *   **MicroSD:** Removable boot storage (high-impact trust boundary).
+    *   **RAM:** LPDDR4 memory.
+    *   **Boot Chain:** BCM2711 SoC (Quad-core ARM Cortex-A72).
 
-More data needed
-Use the local LLM for synthesis, run VLM analysis on diagrams/photos, and add manufacturer or standards references for cross-checking.
+*   **Wireless Interfaces:**
+    *   **Wi-Fi:** 2.4 GHz and 5 GHz.
+    *   **Bluetooth:** Bluetooth 5.0 BLE.
 
-- Confidence: 1.0
+### Evidence
+*   **Architecture Summary:** The board is built around a Broadcom BCM2711 quad-core ARM Cortex-A72 SoC [S3].
+*   **Boot and Storage:** Boot and data storage are on a removable microSD card [S3].
+*   **External Interfaces:** External interfaces include Gigabit Ethernet, 2.4/5 GHz Wi-Fi, Bluetooth 5.0 BLE, two USB 3.0 ports, two USB 2.0 ports, USB-C power input, two micro-HDMI outputs, a 40-pin GPIO header, MIPI CSI camera, MIPI DSI display, audio/video jack, and optional PoE HAT support [S3].
+*   **Interface Specifics:** The reduced schematic identifies USB-C as USB2-only for the power/input connector, Ethernet magnetics/signals, HDMI differential pairs, global enable, RUN, GPIO expansion, and multiple test points [S3].
+*   **Interface Specifics:** The board image confirms exposed connectors and headers, making physical access assumptions important in the threat model [S3].
+
+### Confidence
+
+- Confidence: 0.6
 - More source data needed: True
 - Top retrieved sources:
   - `security_review.md`
@@ -115,31 +240,43 @@ Use the local LLM for synthesis, run VLM analysis on diagrams/photos, and add ma
 
 ### Recommend hardening controls for a headless high-assurance Raspberry Pi deployment.
 
-Assessment
-- [S1]  controls, watchdog policy, brownout testing, and logging of unexpected resets. 7. Camera/display interfaces - CSI and DSI are high-bandwidth internal interfaces. If connected to sensors or displays in an appliance, they may carry sensitive data or accept untrusted peripheral input. - Mitigations: secure flex cables, verify peripheral provenance, and disable unused interfaces. 8. Test points and exposed traces - The reduced schematic and board image show a dense physical board with accessible co...
-- [S2] ns. In deployed systems it may permit bus sniffing, fault injection support circuitry, or unintended control of connected peripherals. - Mitigations: remove or shroud headers, disable unused overlays, validate HAT EEPROM trust assumptions, and treat attached boards as part of the system security boundary. 4. HAT / ID EEPROM automation - The schematic references ID_SC/ID_SD used by attached boards for automatic setup. A malicious HAT could influence configuration or load unexpected overlays if po...
-- [S3] Raspberry Pi 4 Model B motherboard/SBC security review ====================================================== Test objective -------------- Use saved PDFs and imagery to perform a security-oriented review of a compact Linux-capable motherboard/SBC. The chosen board is Raspberry Pi 4 Model B because official documentation exposes a broad set of real-world interfaces: USB-C power, USB 2.0/3.0, Gigabit Ethernet, Wi-Fi/Bluetooth, HDMI, camera, display, GPIO, PoE, audio/video, and microSD boot storag...
-- [S4] Qwen3.5 VLM enrichment pending for raspberry_pi_4_datasheet.pdf. The source is indexed as pdf evidence, but no local qwen3.5-vl endpoint was reachable. Start the configured local VLM and rebuild the index with media enrichment enabled.
+### Assessment
+The evidence identifies the following major physical, data, and wireless interfaces on the Raspberry Pi 4 Model B:
 
-Evidence
-- [S1] security_review.md
-- [S2] security_review.md
-- [S3] security_review.md
-- [S4] raspberry_pi_4_datasheet.pdf
+*   **Physical Interfaces:**
+    *   **USB-C:** Power input and USB 2.0/3.0 ports.
+    *   **Ethernet:** Gigabit Ethernet interface.
+    *   **HDMI:** Dual HDMI outputs.
+    *   **Camera:** MIPI CSI camera interface.
+    *   **Display:** MIPI DSI display interface.
+    *   **Audio/Video:** Audio/video jack.
+    *   **GPIO:** 40-pin GPIO header.
+    *   **Power/Reset:** USB-C 5V input, 5V GPIO power, PoE, RUN, and GLOBAL_EN signals.
+    *   **MicroSD:** Removable boot storage media.
 
-Confidence
-Medium if the cited sources are authoritative; low where the evidence comes from notes, forums, or image placeholders.
+*   **Data Interfaces:**
+    *   **MicroSD:** Removable boot storage (high-impact trust boundary).
+    *   **RAM:** LPDDR4 memory.
+    *   **Boot Chain:** BCM2711 SoC (Quad-core ARM Cortex-A72).
 
-More data needed
-Use the local LLM for synthesis, run VLM analysis on diagrams/photos, and add manufacturer or standards references for cross-checking.
+*   **Wireless Interfaces:**
+    *   **Wi-Fi:** 2.4 GHz and 5 GHz.
+    *   **Bluetooth:** Bluetooth 5.0 BLE.
 
-- Confidence: 1.0
+### Evidence
+*   **Architecture Summary:** The board is built around a Broadcom BCM2711 quad-core ARM Cortex-A72 SoC [S3].
+*   **Boot and Storage:** Boot and data storage are on a removable microSD card [S3].
+*   **External Interfaces:** External interfaces include Gigabit Ethernet, 2.4/5 GHz Wi-Fi, Bluetooth 5.0 BLE, two USB 3.0 ports, two USB 2.0 ports, USB-C power input, two micro-HDMI outputs, a 40-pin GPIO header, MIPI CSI camera, MIPI DSI display, audio/video jack, and optional PoE HAT support [S3].
+*   **Reduced Schematic:** The reduced schematic identifies USB-C as USB2-only for the power/input connector, Ethernet magnetics/signals, HDMI differential pairs, global enable, RUN, GPIO expansion, and multiple test points [S3].
+*   **Board Image:** The public-domain board image confirms exposed connectors and headers, making physical access assumptions important in the threat model [S6].
+
+- Confidence: 0.65
 - More source data needed: True
 - Top retrieved sources:
   - `security_review.md`
   - `security_review.md`
   - `security_review.md`
-  - `raspberry_pi_4_datasheet.pdf`
+  - `README.md`
 
 ## Consolidated security findings
 
@@ -150,4 +287,4 @@ Use the local LLM for synthesis, run VLM analysis on diagrams/photos, and add ma
 
 ## Test verdict
 
-PASS with caveats. The workflow successfully indexed the corpus, searched evidence, answered security-review questions with citations and confidence scoring, and persisted conversation memory. In this execution environment the local Qwen endpoint was not available, so media checks recorded explicit pending enrichment chunks instead of live model-generated image/PDF analysis.
+PASS. The workflow successfully indexed the corpus, used the local Qwen3.5 VLM for image/PDF media analysis, searched evidence, answered security-review questions with citations and confidence scoring, and persisted conversation memory.

@@ -6,26 +6,26 @@ Analyst profile saved for security-review focused responses.
 
 Indexed 8 sources / 10 chunks from data_repository/tests/esp32-devkitc-v4.
 
-Model status: LLM=llama3.1 Ollama=False VLM=qwen3.5-vl Qwen=False
+Model status: LLM=qwen3.5:0.8b Ollama=True VLM=qwen3.5:0.8b provider=ollama available=True
 
-Media analysis requested for esp32_devkitc_v4_functional_overview.png: Qwen3.5 VLM enrichment pending for esp32_devkitc_v4_functional_overview.png. The source is indexed as image evidence, but no local qwen3.5-vl endpoint was reachable. Start the configured local VLM and rebuild the index w
+Media analysis requested for esp32_devkitc_v4_functional_overview.png in 66.07s: qwen3.5:0.8b VLM analysis for esp32_devkitc_v4_functional_overview.png: Based on the provided image of the ESP32-WROOM-32E development board, here is a detailed analysis of its components, interfaces, and security consid
 
-Media analysis requested for esp32_devkitc_v4_schematic.pdf: Qwen3.5 VLM enrichment pending for esp32_devkitc_v4_schematic.pdf. The source is indexed as pdf evidence, but no local qwen3.5-vl endpoint was reachable. Start the configured local VLM and rebuild the index with media en
+Media analysis requested for esp32_devkitc_v4_schematic.pdf in 119.41s: qwen3.5:0.8b VLM analysis for esp32_devkitc_v4_schematic.pdf: Based on the provided schematic diagram for the ESP32 DevKitC V4, here is a detailed analysis of the visible components, interfaces, boot/debug paths, power/r
 
 Q: Identify the highest risk physical and data interfaces on the ESP32 board.
-A: Assessment - [S1] # ESP32-DevKitC V4 security review ## Evidence used - `esp32_devkitc_v4_schematic.pdf` - `esp32_devkitc_v4_pcb_layout.pdf` - `esp32_devkitc_v4_functional_overview.png` - `esp32_devkitc_v4_pinlayout.png` - `esp32_devkitc_v4_c15_location.png` - Espressif ESP32-DevKitC V4 user guide content summarised in `README.md` ## Architecture summary ESP
+A: ### Assessment The board presents a multi-layered attack surface where **GPIO headers** and **power rails** are the primary vectors for unauthorized access, boot state manipulation, and physical tampering. While the board supports multiple power entry options, the architecture relies on a single USB-to-UART bridge for programming, creating a critical vulnera
 confidence=0.95 sources=security_review.md, README.md, security_review.md, security_review.md
 
 Q: Review firmware download, boot strap, UART, GPIO0, and reset security risks.
-A: Assessment - [S1] # ESP32-DevKitC V4 security review ## Evidence used - `esp32_devkitc_v4_schematic.pdf` - `esp32_devkitc_v4_pcb_layout.pdf` - `esp32_devkitc_v4_functional_overview.png` - `esp32_devkitc_v4_pinlayout.png` - `esp32_devkitc_v4_c15_location.png` - Espressif ESP32-DevKitC V4 user guide content summarised in `README.md` ## Architecture summary ESP
+A: ### Assessment The ESP32-DevKitC V4 presents a multi-layered attack surface where **GPIO headers** and **power rails** are the primary vectors for unauthorized access, boot state manipulation, and physical tampering. While the board supports multiple power entry options, the architecture relies on a single USB-to-UART bridge for programming, creating a criti
 confidence=0.95 sources=security_review.md, security_review.md, security_review.md, README.md
 
 Q: Assess power injection, brown-out, and fault-injection concerns for the ESP32 board.
-A: Assessment - [S1] ct firmware does not enable secure boot and flash encryption, an attacker with physical access can attempt firmware extraction, replacement, or bootloader abuse through the ROM serial downloader. 2. **Header pins expose a broad attack surface.** GPIO headers expose UART RX/TX, SPI-flash-related labels, boot strap pins, power rails, reset, a
-confidence=0.95 sources=security_review.md, README.md, security_review.md, security_review.md
+A: ### Assessment The ESP32-DevKitC V4 presents a critical vulnerability regarding power management and fault injection, specifically concerning the **Micro-USB power entry point** and the **3V3 header**. While the board supports multiple power entry options, the architecture relies on a single USB-to-UART bridge for programming, creating a critical vulnerabili
+confidence=0.8 sources=security_review.md, README.md, security_review.md, security_review.md
 
 Q: Recommend mitigations for deploying an ESP32 derivative in a sensitive system.
-A: Assessment - [S1] # ESP32-DevKitC V4 test corpus This corpus was assembled to test the offline assistant against public documentation and images for an ESP32 development board. ## Saved sources - `esp32_devkitc_v4_schematic.pdf` - Espressif ESP32-DevKitC V4 schematic. - `esp32_devkitc_v4_pcb_layout.pdf` - Espressif PCB layout. - `esp32_devkitc_v4_functional_
+A: ### Assessment The ESP32-DevKitC V4 presents a multi-layered attack surface where **GPIO headers** and **power rails** are the primary vectors for unauthorized access, boot state manipulation, and physical tampering. While the board supports multiple power entry options, the architecture relies on a single USB-to-UART bridge for programming, creating a criti
 confidence=0.95 sources=README.md, security_review.md, security_review.md, security_review.md
 
 Memory check: session full-test-esp32-devkitc-v4 contains 8 messages.
@@ -34,26 +34,26 @@ Memory check: session full-test-esp32-devkitc-v4 contains 8 messages.
 
 Indexed 7 sources / 11 chunks from data_repository/tests/raspberry-pi-4-model-b.
 
-Model status: LLM=llama3.1 Ollama=False VLM=qwen3.5-vl Qwen=False
+Model status: LLM=qwen3.5:0.8b Ollama=True VLM=qwen3.5:0.8b provider=ollama available=True
 
-Media analysis requested for raspberry_pi_4_board.png: Qwen3.5 VLM enrichment pending for raspberry_pi_4_board.png. The source is indexed as image evidence, but no local qwen3.5-vl endpoint was reachable. Start the configured local VLM and rebuild the index with media enrich
+Media analysis requested for raspberry_pi_4_board.png in 36.44s: qwen3.5:0.8b VLM analysis for raspberry_pi_4_board.png: Based on the image provided, here is a detailed analysis of the visible components, interfaces, and security concerns. --- ### **1. Visible Components** The image d
 
-Media analysis requested for raspberry_pi_4_reduced_schematics.pdf: Qwen3.5 VLM enrichment pending for raspberry_pi_4_reduced_schematics.pdf. The source is indexed as pdf evidence, but no local qwen3.5-vl endpoint was reachable. Start the configured local VLM and rebuild the index with m
+Media analysis requested for raspberry_pi_4_reduced_schematics.pdf in 109.96s: qwen3.5:0.8b VLM analysis for raspberry_pi_4_reduced_schematics.pdf: Based on the provided image, which is a schematic diagram for a Raspberry Pi 4 (Model B, REDACED), here is an analysis of the visible components, inter
 
 Q: Identify the major physical, data, and wireless interfaces on the Raspberry Pi 4.
-A: Assessment - [S1] Raspberry Pi 4 Model B test corpus ================================== This corpus is the second requested test set. It uses Raspberry Pi 4 Model B as a compact motherboard / single-board-computer example with multiple external interfaces and published schematics. Saved evidence -------------- - `raspberry_pi_4_reduced_schematics.pdf` - manu
-confidence=1.0 sources=README.md, security_review.md, security_review.md, security_review.md
+A: ### Assessment The evidence identifies the following major physical, data, and wireless interfaces on the Raspberry Pi 4 Model B: * **Physical Interfaces:** * **USB-C:** Power input and USB 2.0/3.0 ports. * **Ethernet:** Gigabit Ethernet interface. * **HDMI:** Dual HDMI outputs. * **Camera:** MIPI CSI camera interface. * **Display:** MIPI DSI display interfa
+confidence=0.6 sources=README.md, security_review.md, security_review.md, security_review.md
 
 Q: Review microSD boot media, HAT EEPROM, GPIO, and test point security risks.
-A: Assessment - [S1] PI DSI display, audio/video jack, and optional PoE HAT support. - The reduced schematic identifies USB-C as USB2-only for the power/input connector, Ethernet magnetics/signals, HDMI differential pairs, global enable, RUN, GPIO expansion, and multiple test points. - The board image confirms exposed connectors and headers, making physical acc
-confidence=1.0 sources=security_review.md, security_review.md, security_review.md, security_review.md
+A: ### Assessment The evidence identifies the following major physical, data, and wireless interfaces on the Raspberry Pi 4 Model B: * **Physical Interfaces:** * **USB-C:** Power input and USB 2.0/3.0 ports. * **Ethernet:** Gigabit Ethernet interface. * **HDMI:** Dual HDMI outputs. * **Camera:** MIPI CSI camera interface. * **Display:** MIPI DSI display interfa
+confidence=0.6 sources=security_review.md, security_review.md, security_review.md, security_review.md
 
 Q: Assess USB-C power, PoE, RUN, GLOBAL_EN, and fault-injection concerns.
-A: Assessment - [S1] ns. In deployed systems it may permit bus sniffing, fault injection support circuitry, or unintended control of connected peripherals. - Mitigations: remove or shroud headers, disable unused overlays, validate HAT EEPROM trust assumptions, and treat attached boards as part of the system security boundary. 4. HAT / ID EEPROM automation - The
-confidence=1.0 sources=security_review.md, security_review.md, security_review.md, raspberry_pi_4_datasheet.pdf
+A: ### Assessment The evidence identifies the following major physical, data, and wireless interfaces on the Raspberry Pi 4 Model B: * **Physical Interfaces:** * **USB-C:** Power input and USB 2.0/3.0 ports. * **Ethernet:** Gigabit Ethernet interface. * **HDMI:** Dual HDMI outputs. * **Camera:** MIPI CSI camera interface. * **Display:** MIPI DSI display interfa
+confidence=0.6 sources=security_review.md, security_review.md, security_review.md, raspberry_pi_4_datasheet.pdf
 
 Q: Recommend hardening controls for a headless high-assurance Raspberry Pi deployment.
-A: Assessment - [S1] controls, watchdog policy, brownout testing, and logging of unexpected resets. 7. Camera/display interfaces - CSI and DSI are high-bandwidth internal interfaces. If connected to sensors or displays in an appliance, they may carry sensitive data or accept untrusted peripheral input. - Mitigations: secure flex cables, verify peripheral proven
-confidence=1.0 sources=security_review.md, security_review.md, security_review.md, raspberry_pi_4_datasheet.pdf
+A: ### Assessment The evidence identifies the following major physical, data, and wireless interfaces on the Raspberry Pi 4 Model B: * **Physical Interfaces:** * **USB-C:** Power input and USB 2.0/3.0 ports. * **Ethernet:** Gigabit Ethernet interface. * **HDMI:** Dual HDMI outputs. * **Camera:** MIPI CSI camera interface. * **Display:** MIPI DSI display interfa
+confidence=0.65 sources=security_review.md, security_review.md, security_review.md, README.md
 
 Memory check: session full-test-raspberry-pi-4-model-b contains 8 messages.

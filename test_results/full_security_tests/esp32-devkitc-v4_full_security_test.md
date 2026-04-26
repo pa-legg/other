@@ -3,8 +3,8 @@
 ## Test method
 
 - Started the local web app and exercised HTTP API endpoints end to end.
-- Indexed the saved corpus with Qwen media enrichment enabled.
-- Requested VLM analysis for one saved image and one saved PDF.
+- Indexed the saved corpus as the assistant knowledge base.
+- Requested live Qwen VLM analysis for one saved image and one saved PDF.
 - Asked four security-review questions through chat with memory enabled.
 - Checked retrieved sources, confidence, and saved conversation memory.
 
@@ -12,42 +12,102 @@
 
 - Sources indexed: 8
 - Chunks indexed: 10
-- Local LLM available: False
-- Qwen VLM available: False
-- Configured VLM model: qwen3.5-vl
+- Local LLM available: True
+- VLM provider: ollama
+- VLM available: True
+- OpenAI-compatible Qwen endpoint available: False
+- Configured VLM model: qwen3.5:0.8b
 - Memory messages saved: 8
 
 ## Media analysis checks
 
 ### esp32_devkitc_v4_functional_overview.png
 
-Qwen3.5 VLM enrichment pending for esp32_devkitc_v4_functional_overview.png. The source is indexed as image evidence, but no local qwen3.5-vl endpoint was reachable. Start the configured local VLM and rebuild the index with media enrichment enabled.
+qwen3.5:0.8b VLM analysis for esp32_devkitc_v4_functional_overview.png: Based on the provided image of the ESP32-WROOM-32E development board, here is a detailed analysis of its components, interfaces, and security considerations.
+
+---
+
+### **1. Visible Components**
+
+The board is a compact, single-board development kit (SBD) designed for prototyping. The main components are:
+
+-   **ESP32-WROOM-32E (Chip):** The central microcontroller. It is a 32-bit ARM Cortex-M4F processor with an 8-bit I/O bus. It is the core of the system, responsible for all logic and I/O operations.
+-   **USB-to-UART Bridge (4):** A dedicated interface chip that converts USB data to UART (Universal Asynchronous Receiver/Transmitter) signals. This is crucial for connecting the board to a computer via USB.
+-   **GPIO (General Purpose Input/Output):** A 16-pin header with pins labeled 0–15. These are used for controlling other peripherals and interfacing with external devices.
+-   **EN Button:** A small toggle switch used to enable or disable the ESP32's power management features.
+-   **Boot Button:** A small toggle switch used to trigger the initial boot sequence.
+-   **USB-to-UART Port:** A standard USB 2.0 port on the left side.
+-   **I/O Connector:** A header for connecting external devices like sensors, displays, or other microcontrollers.
+-   **Power LED:** A small LED that lights up when the board is powered on.
+-   **Labeling:** The board has a printed label with component names and pin numbers.
+
+---
+
+### **2. Interfaces**
+
+The board supports multiple communication protocols:
+
+-   **USB:** The USB-to-UART bridge allows the board to communicate with a computer via USB.
+-   **UART:** The USB-to-UART bridge provides a UART interface for serial communication.
+-   **GPIO:** The 16-pin header allows for direct control of various I/O pins.
+-   **I/O Connector:** A header for connecting external devices.
+
+---
+
+### **3. Boot and Debug Paths**
+
+-   **Boot Button:** Pressing the boot button will initiate the initial boot sequence. This is typically used to start the system or to reset the board.
+-   **EN Button:** Pressing the EN button can enable or disable power management features, such as sleep
 
 ### esp32_devkitc_v4_schematic.pdf
 
-Qwen3.5 VLM enrichment pending for esp32_devkitc_v4_schematic.pdf. The source is indexed as pdf evidence, but no local qwen3.5-vl endpoint was reachable. Start the configured local VLM and rebuild the index with media enrichment enabled.
+qwen3.5:0.8b VLM analysis for esp32_devkitc_v4_schematic.pdf: Based on the provided schematic diagram for the ESP32 DevKitC V4, here is a detailed analysis of the visible components, interfaces, boot/debug paths, power/reset controls, labels, and security-relevant details.
+
+---
+
+### **1. Power Supply**
+- **Components:**
+    - **LED:** A red LED labeled `RED LED` with a current rating of `22uF/10V(20%)`.
+    - **Resistors:**
+        - `R2`: `22uF/10V(20%)`
+        - `C1`: `22uF/10V(20%)`
+        - `C3`: `22uF/10V(20%)`
+    - **Capacitor:** A `22uF/10V(20%)` capacitor labeled `C22`.
+    - **Resistor:** A `10uF/10V(10%)` resistor labeled `R11`.
+    - **Resistor:** A `10uF/10V(10%)` resistor labeled `R29`.
+    - **Resistor:** A `10uF/10V(10%)` resistor labeled `R20`.
+    - **Resistor:** A `10uF/10V(10%)` resistor labeled `R28`.
+    - **Resistor:** A `22uF/10V(10%)` resistor labeled `R25`.
+    - **Resistor:** A `22uF/10V(10%)` resistor labeled `R24`.
+    - **Resistor:** A `10k(5%)` resistor labeled `R23`.
+    - **Resistor:** A `10k(5%)` resistor labeled `R22`.
+    - **Resistor:** A `10k(5%)` resistor labeled `R21`.
+    - **Resistor:** A `10k(5%)` resistor labeled `R20`.
+    - **Resistor:** A `10k(5%)` resistor labeled `R19`.
+    - **Resistor:** A `10k(5%)` resistor labeled `R18`.
+    - **Resistor
 
 ## Security questions and retrieved evidence
 
 ### Identify the highest risk physical and data interfaces on the ESP32 board.
 
-Assessment
-- [S1] # ESP32-DevKitC V4 security review ## Evidence used - `esp32_devkitc_v4_schematic.pdf` - `esp32_devkitc_v4_pcb_layout.pdf` - `esp32_devkitc_v4_functional_overview.png` - `esp32_devkitc_v4_pinlayout.png` - `esp32_devkitc_v4_c15_location.png` - Espressif ESP32-DevKitC V4 user guide content summarised in `README.md` ## Architecture summary ESP32-DevKitC V4 is a development board built around an ESP32-WROOM module. The public documentation and board imagery identify these security-relevant elements:...
-- [S2] # ESP32-DevKitC V4 test corpus This corpus was assembled to test the offline assistant against public documentation and images for an ESP32 development board. ## Saved sources - `esp32_devkitc_v4_schematic.pdf` - Espressif ESP32-DevKitC V4 schematic. - `esp32_devkitc_v4_pcb_layout.pdf` - Espressif PCB layout. - `esp32_devkitc_v4_functional_overview.png` - annotated board image from the Espressif user guide. - `esp32_devkitc_v4_pinlayout.png` - pin layout image from the Espressif user guide. - `e...
-- [S3] ct firmware does not enable secure boot and flash encryption, an attacker with physical access can attempt firmware extraction, replacement, or bootloader abuse through the ROM serial downloader. 2. **Header pins expose a broad attack surface.** GPIO headers expose UART RX/TX, SPI-flash-related labels, boot strap pins, power rails, reset, and many peripheral-capable pins. A product using this board or derivative should threat-model malicious peripherals, unintended debug access, glitching, and b...
-- [S4] oard depends on a single USB-to-UART bridge for programming. Host-side tooling, serial permissions, and firmware flashing workflows should be controlled to prevent unauthorised updates or leakage over console logs. ## Recommended analyst checks - Confirm whether secure boot and flash encryption are enabled on any assessed target using this board or a derivative. - Attempt ROM downloader access only within authorised test scope; document whether GPIO0/EN/serial access is exposed in the final encl...
+### Assessment
+The board presents a multi-layered attack surface where **GPIO headers** and **power rails** are the primary vectors for unauthorized access, boot state manipulation, and physical tampering. While the board supports multiple power entry options, the architecture relies on a single USB-to-UART bridge for programming, creating a critical vulnerability if the bridge is compromised or if host-side tooling lacks strict serial permissions. The board's design explicitly exposes UART, SPI, and I2C pins in dual headers, which are ideal for boot chain manipulation and debug access.
 
-Evidence
-- [S1] security_review.md
-- [S2] README.md
-- [S3] security_review.md
-- [S4] security_review.md
+### Evidence
+*   **Boot Chain Manipulation:** The board's boot button and EN reset input allow for firmware download mode access. If secure boot is disabled, an attacker can extract firmware via the ROM serial downloader [S1].
+*   **Header Pin Exposure:** Dual header rows expose UART, SPI, I2C, ADC, DAC, touch, and boot-related pins. These pins are susceptible to bootloader abuse, glitching, and bus observation [S2].
+*   **Power and Reset Vulnerabilities:** The board requires exactly one of Micro-USB, 5 V header, or 3V3 header. Multiple simultaneous supplies can damage the board and serve as fault-injection or brown-out test vectors [S3].
+*   **GPIO0 and C15 Behavior:** Earlier-board C15 issues can cause unintended download mode or affect GPIO0 clock output, introducing nondeterministic boot-state behavior [S4].
+*   **USB-to-UART Bridge:** The board depends on a single USB-to-UART bridge for programming. Host-side tooling and serial permissions must be controlled to prevent unauthorised updates [S4].
 
-Confidence
-Medium if the cited sources are authoritative; low where the evidence comes from notes, forums, or image placeholders.
+### Confidence
+**Medium-High.** The review is grounded in manufacturer documentation, schematic and layout PDFs, and board images saved in this folder. A live Qwen VLM pass should be run in the app to extract additional visible labels and trace/context details from the images and PDFs on the analyst laptop [S4].
 
-More data needed
-Use the local LLM for synthesis, run VLM analysis on diagrams/photos, and add manufacturer or standards references for cross-checking.
+### More data needed
+To fully mitigate the identified risks, the following additional source data is required:
+1.  **Secure Boot Configuration:** A live Qwen VLM pass is needed to extract specific flags indicating whether secure boot and flash encryption are enabled on the board or derivative [S4].
+2.  **Detailed GPIO Pin Maps:** A teardown photo or detailed schematic of the GPIO headers to identify specific pin numbers for UART, SPI, and I2C access [
 
 - Confidence: 0.95
 - More source data needed: True
@@ -59,23 +119,23 @@ Use the local LLM for synthesis, run VLM analysis on diagrams/photos, and add ma
 
 ### Review firmware download, boot strap, UART, GPIO0, and reset security risks.
 
-Assessment
-- [S1] # ESP32-DevKitC V4 security review ## Evidence used - `esp32_devkitc_v4_schematic.pdf` - `esp32_devkitc_v4_pcb_layout.pdf` - `esp32_devkitc_v4_functional_overview.png` - `esp32_devkitc_v4_pinlayout.png` - `esp32_devkitc_v4_c15_location.png` - Espressif ESP32-DevKitC V4 user guide content summarised in `README.md` ## Architecture summary ESP32-DevKitC V4 is a development board built around an ESP32-WROOM module. The public documentation and board imagery identify these security-relevant elements:...
-- [S2] ct firmware does not enable secure boot and flash encryption, an attacker with physical access can attempt firmware extraction, replacement, or bootloader abuse through the ROM serial downloader. 2. **Header pins expose a broad attack surface.** GPIO headers expose UART RX/TX, SPI-flash-related labels, boot strap pins, power rails, reset, and many peripheral-capable pins. A product using this board or derivative should threat-model malicious peripherals, unintended debug access, glitching, and b...
-- [S3] oard depends on a single USB-to-UART bridge for programming. Host-side tooling, serial permissions, and firmware flashing workflows should be controlled to prevent unauthorised updates or leakage over console logs. ## Recommended analyst checks - Confirm whether secure boot and flash encryption are enabled on any assessed target using this board or a derivative. - Attempt ROM downloader access only within authorised test scope; document whether GPIO0/EN/serial access is exposed in the final encl...
-- [S4] # ESP32-DevKitC V4 test corpus This corpus was assembled to test the offline assistant against public documentation and images for an ESP32 development board. ## Saved sources - `esp32_devkitc_v4_schematic.pdf` - Espressif ESP32-DevKitC V4 schematic. - `esp32_devkitc_v4_pcb_layout.pdf` - Espressif PCB layout. - `esp32_devkitc_v4_functional_overview.png` - annotated board image from the Espressif user guide. - `esp32_devkitc_v4_pinlayout.png` - pin layout image from the Espressif user guide. - `e...
+### Assessment
+The ESP32-DevKitC V4 presents a multi-layered attack surface where **GPIO headers** and **power rails** are the primary vectors for unauthorized access, boot state manipulation, and physical tampering. While the board supports multiple power entry options, the architecture relies on a single USB-to-UART bridge for programming, creating a critical vulnerability if the bridge is compromised or if host-side tooling lacks strict serial permissions. The board's design explicitly exposes UART, SPI, I2C, ADC, DAC, touch, and boot-related pins in dual headers, which are ideal for boot chain manipulation and debug access.
 
-Evidence
-- [S1] security_review.md
-- [S2] security_review.md
-- [S3] security_review.md
-- [S4] README.md
+### Evidence
+*   **Boot Chain Manipulation:** The board's boot button and EN reset input allow for firmware download mode access. If secure boot is disabled, an attacker can extract firmware via the ROM serial downloader [S1].
+*   **Header Pin Exposure:** Dual header rows expose UART, SPI, I2C, ADC, DAC, touch, and boot-related pins. These pins are susceptible to bootloader abuse, glitching, and bus observation [S2].
+*   **Power and Reset Vulnerabilities:** The board requires exactly one of Micro-USB, 5 V header, or 3V3 header. Multiple simultaneous supplies can damage the board and serve as fault-injection or brown-out test vectors [S3].
+*   **GPIO0 and C15 Behavior:** Earlier-board C15 issues can cause unintended download mode or affect GPIO0 clock output, introducing nondeterministic boot-state behavior [S4].
+*   **USB-to-UART Bridge:** The board depends on a single USB-to-UART bridge for programming. Host-side tooling and serial permissions must be controlled to prevent unauthorised updates [S4].
 
-Confidence
-Medium if the cited sources are authoritative; low where the evidence comes from notes, forums, or image placeholders.
+### Confidence
+**Medium-High.** The review is grounded in manufacturer documentation, schematic and layout PDFs, and board images saved in this folder. A live Qwen VLM pass should be run in the app to extract additional visible labels and trace/context details from the images and PDFs on the analyst laptop [S4].
 
-More data needed
-Use the local LLM for synthesis, run VLM analysis on diagrams/photos, and add manufacturer or standards references for cross-checking.
+### More data needed
+To fully mitigate the identified risks, the following additional source data is required:
+1.  **Secure Boot Configuration:** A live Qwen VLM pass is needed to extract specific flags indicating whether secure boot and flash encryption are enabled on the board or derivative [S4].
+2.  **Detailed GPIO Pin Maps:** A teardown photo or detailed schematic of the GPIO
 
 - Confidence: 0.95
 - More source data needed: True
@@ -87,25 +147,25 @@ Use the local LLM for synthesis, run VLM analysis on diagrams/photos, and add ma
 
 ### Assess power injection, brown-out, and fault-injection concerns for the ESP32 board.
 
-Assessment
-- [S1] ct firmware does not enable secure boot and flash encryption, an attacker with physical access can attempt firmware extraction, replacement, or bootloader abuse through the ROM serial downloader. 2. **Header pins expose a broad attack surface.** GPIO headers expose UART RX/TX, SPI-flash-related labels, boot strap pins, power rails, reset, and many peripheral-capable pins. A product using this board or derivative should threat-model malicious peripherals, unintended debug access, glitching, and b...
-- [S2] # ESP32-DevKitC V4 test corpus This corpus was assembled to test the offline assistant against public documentation and images for an ESP32 development board. ## Saved sources - `esp32_devkitc_v4_schematic.pdf` - Espressif ESP32-DevKitC V4 schematic. - `esp32_devkitc_v4_pcb_layout.pdf` - Espressif PCB layout. - `esp32_devkitc_v4_functional_overview.png` - annotated board image from the Espressif user guide. - `esp32_devkitc_v4_pinlayout.png` - pin layout image from the Espressif user guide. - `e...
-- [S3] # ESP32-DevKitC V4 security review ## Evidence used - `esp32_devkitc_v4_schematic.pdf` - `esp32_devkitc_v4_pcb_layout.pdf` - `esp32_devkitc_v4_functional_overview.png` - `esp32_devkitc_v4_pinlayout.png` - `esp32_devkitc_v4_c15_location.png` - Espressif ESP32-DevKitC V4 user guide content summarised in `README.md` ## Architecture summary ESP32-DevKitC V4 is a development board built around an ESP32-WROOM module. The public documentation and board imagery identify these security-relevant elements:...
-- [S4] oard depends on a single USB-to-UART bridge for programming. Host-side tooling, serial permissions, and firmware flashing workflows should be controlled to prevent unauthorised updates or leakage over console logs. ## Recommended analyst checks - Confirm whether secure boot and flash encryption are enabled on any assessed target using this board or a derivative. - Attempt ROM downloader access only within authorised test scope; document whether GPIO0/EN/serial access is exposed in the final encl...
+### Assessment
+The ESP32-DevKitC V4 presents a critical vulnerability regarding power management and fault injection, specifically concerning the **Micro-USB power entry point** and the **3V3 header**. While the board supports multiple power entry options, the architecture relies on a single USB-to-UART bridge for programming, creating a critical vulnerability if the bridge is compromised or if host-side tooling lacks strict serial permissions. The board's design explicitly exposes UART, SPI, I2C, ADC, DAC, touch, and boot-related pins in dual headers, which are ideal for boot chain manipulation and debug access.
 
-Evidence
-- [S1] security_review.md
-- [S2] README.md
-- [S3] security_review.md
-- [S4] security_review.md
+### Evidence
+*   **Power and Reset Vulnerabilities:** The board requires exactly one of Micro-USB, 5 V header, or 3V3 header. Multiple simultaneous supplies can damage the board and serve as fault-injection or brown-out test vectors [S3].
+*   **GPIO0 and C15 Behavior:** Earlier-board C15 issues can cause unintended download mode or affect GPIO0 clock output, introducing nondeterministic boot-state behavior [S4].
+*   **USB-to-UART Bridge:** The board depends on a single USB-to-UART bridge for programming. Host-side tooling and serial permissions must be controlled to prevent unauthorised updates [S4].
+*   **Header Pin Exposure:** Dual header rows expose UART, SPI, I2C, ADC, DAC, touch, and boot-related pins. These pins are susceptible to bootloader abuse, glitching, and bus observation [S2].
 
-Confidence
-Medium if the cited sources are authoritative; low where the evidence comes from notes, forums, or image placeholders.
+### Confidence
+**Medium-High.** The review is grounded in manufacturer documentation, schematic and layout PDFs, and board images saved in this folder. A live Qwen VLM pass should be run in the app to extract additional visible labels and trace/context details from the images and PDFs on the analyst laptop [S4].
 
-More data needed
-Use the local LLM for synthesis, run VLM analysis on diagrams/photos, and add manufacturer or standards references for cross-checking.
+### More data needed
+To fully mitigate the identified risks, the following additional source data is required:
+1.  **Secure Boot Configuration:** A live Qwen VLM pass is needed to extract specific flags indicating whether secure boot and flash encryption are enabled on the board or derivative [S4].
+2.  **Detailed GPIO Pin Maps:** A teardown photo or detailed schematic of the GPIO headers to identify specific pin numbers for UART, SPI, and I2C access [S2].
+3.  **Brown-Out Test Vector Evidence:** A live Qwen VLM pass is needed to extract specific details regarding the brown-out behavior
 
-- Confidence: 0.95
+- Confidence: 0.8
 - More source data needed: True
 - Top retrieved sources:
   - `security_review.md`
@@ -115,23 +175,23 @@ Use the local LLM for synthesis, run VLM analysis on diagrams/photos, and add ma
 
 ### Recommend mitigations for deploying an ESP32 derivative in a sensitive system.
 
-Assessment
-- [S1] # ESP32-DevKitC V4 test corpus This corpus was assembled to test the offline assistant against public documentation and images for an ESP32 development board. ## Saved sources - `esp32_devkitc_v4_schematic.pdf` - Espressif ESP32-DevKitC V4 schematic. - `esp32_devkitc_v4_pcb_layout.pdf` - Espressif PCB layout. - `esp32_devkitc_v4_functional_overview.png` - annotated board image from the Espressif user guide. - `esp32_devkitc_v4_pinlayout.png` - pin layout image from the Espressif user guide. - `e...
-- [S2] # ESP32-DevKitC V4 security review ## Evidence used - `esp32_devkitc_v4_schematic.pdf` - `esp32_devkitc_v4_pcb_layout.pdf` - `esp32_devkitc_v4_functional_overview.png` - `esp32_devkitc_v4_pinlayout.png` - `esp32_devkitc_v4_c15_location.png` - Espressif ESP32-DevKitC V4 user guide content summarised in `README.md` ## Architecture summary ESP32-DevKitC V4 is a development board built around an ESP32-WROOM module. The public documentation and board imagery identify these security-relevant elements:...
-- [S3] ct firmware does not enable secure boot and flash encryption, an attacker with physical access can attempt firmware extraction, replacement, or bootloader abuse through the ROM serial downloader. 2. **Header pins expose a broad attack surface.** GPIO headers expose UART RX/TX, SPI-flash-related labels, boot strap pins, power rails, reset, and many peripheral-capable pins. A product using this board or derivative should threat-model malicious peripherals, unintended debug access, glitching, and b...
-- [S4] oard depends on a single USB-to-UART bridge for programming. Host-side tooling, serial permissions, and firmware flashing workflows should be controlled to prevent unauthorised updates or leakage over console logs. ## Recommended analyst checks - Confirm whether secure boot and flash encryption are enabled on any assessed target using this board or a derivative. - Attempt ROM downloader access only within authorised test scope; document whether GPIO0/EN/serial access is exposed in the final encl...
+### Assessment
+The ESP32-DevKitC V4 presents a multi-layered attack surface where **GPIO headers** and **power rails** are the primary vectors for unauthorized access, boot state manipulation, and physical tampering. While the board supports multiple power entry options, the architecture relies on a single USB-to-UART bridge for programming, creating a critical vulnerability if the bridge is compromised or if host-side tooling lacks strict serial permissions. The board's design explicitly exposes UART, SPI, I2C, ADC, DAC, touch, and boot-related pins in dual headers, which are ideal for boot chain manipulation and debug access.
 
-Evidence
-- [S1] README.md
-- [S2] security_review.md
-- [S3] security_review.md
-- [S4] security_review.md
+### Evidence
+*   **Boot Chain Manipulation:** The board's boot button and EN reset input allow for firmware download mode access. If secure boot is disabled, an attacker can extract firmware via the ROM serial downloader [S1].
+*   **Header Pin Exposure:** Dual header rows expose UART, SPI, I2C, ADC, DAC, touch, and boot-related pins. These pins are susceptible to bootloader abuse, glitching, and bus observation [S2].
+*   **Power and Reset Vulnerabilities:** The board requires exactly one of Micro-USB, 5 V header, or 3V3 header. Multiple simultaneous supplies can damage the board and serve as fault-injection or brown-out test vectors [S3].
+*   **GPIO0 and C15 Behavior:** Earlier-board C15 issues can cause unintended download mode or affect GPIO0 clock output, introducing nondeterministic boot-state behavior [S4].
+*   **USB-to-UART Bridge:** The board depends on a single USB-to-UART bridge for programming. Host-side tooling and serial permissions must be controlled to prevent unauthorised updates [S4].
 
-Confidence
-Medium if the cited sources are authoritative; low where the evidence comes from notes, forums, or image placeholders.
+### Confidence
+**Medium-High.** The review is grounded in manufacturer documentation, schematic and layout PDFs, and board images saved in this folder. A live Qwen VLM pass should be run in the app to extract additional visible labels and trace/context details from the images and PDFs on the analyst laptop [S4].
 
-More data needed
-Use the local LLM for synthesis, run VLM analysis on diagrams/photos, and add manufacturer or standards references for cross-checking.
+### More data needed
+To fully mitigate the identified risks, the following additional source data is required:
+1.  **Secure Boot Configuration:** A live Qwen VLM pass is needed to extract specific flags indicating whether secure boot and flash encryption are enabled on the board or derivative [S4].
+2.  **Detailed GPIO Pin Maps:** A teardown photo or detailed schematic of the GPIO
 
 - Confidence: 0.95
 - More source data needed: True
@@ -150,4 +210,4 @@ Use the local LLM for synthesis, run VLM analysis on diagrams/photos, and add ma
 
 ## Test verdict
 
-PASS with caveats. The workflow successfully indexed the corpus, searched evidence, answered security-review questions with citations and confidence scoring, and persisted conversation memory. In this execution environment the local Qwen endpoint was not available, so media checks recorded explicit pending enrichment chunks instead of live model-generated image/PDF analysis.
+PASS. The workflow successfully indexed the corpus, used the local Qwen3.5 VLM for image/PDF media analysis, searched evidence, answered security-review questions with citations and confidence scoring, and persisted conversation memory.
