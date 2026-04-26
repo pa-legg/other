@@ -511,7 +511,7 @@ def validate_answer(answer: str, evidence: list[dict[str, Any]]) -> dict[str, An
     )
     source_score = min(high_conf_sources / 2, 1.0)
     coverage_score = min(len(evidence) / 4, 1.0)
-    confidence = round((0.45 * citation_score) + (0.35 * coverage_score) + (0.20 * source_score), 2)
+    confidence = min(round((0.45 * citation_score) + (0.35 * coverage_score) + (0.20 * source_score), 2), 1.0)
     if not evidence:
         confidence = 0.05
     needs_more = confidence < 0.68 or "more data" in answer.lower() or "incomplete" in answer.lower()
