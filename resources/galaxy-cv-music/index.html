@@ -1,0 +1,34 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Galaxy Music Gesture</title>
+  </head>
+  <body>
+    <div id="app">
+      <canvas id="galaxy-canvas"></canvas>
+      <video id="webcam" autoplay playsinline muted></video>
+      <div id="hud">
+        <div id="hud-header">
+          <h1>Galaxy Music Gesture</h1>
+          <button id="hud-toggle" type="button" aria-label="Minimize panel">−</button>
+        </div>
+        <div id="hud-body">
+          <p id="gesture-label">Show your hand to the camera</p>
+          <p id="note-label" class="note-label">—</p>
+          <ul id="gesture-guide">
+            <li><strong>Fist</strong> — orbiting space dust (rest)</li>
+            <li><strong>Thumb</strong> — C4 (middle C)</li>
+            <li><strong>Index</strong> — C♯4 · <strong>Middle</strong> — D4 · <strong>Ring</strong> — D♯4 · <strong>Pinky</strong> — E4</li>
+            <li><strong>Index + middle</strong> — F4 · <strong>Middle + ring</strong> — F♯4 · <strong>Ring + pinky</strong> — G4</li>
+            <li><strong>Index + middle + ring</strong> — G♯4 · <strong>Middle + ring + pinky</strong> — A4</li>
+            <li><strong>Four fingers</strong> (no thumb) — A♯4 · <strong>Four + thumb</strong> — B4 · <strong>Open palm</strong> — C5 (top C)</li>
+          </ul>
+        </div>
+      </div>
+      <div id="loading">Loading hand tracking&hellip;</div>
+    </div>
+    <script type="module" src="/src/main.js"></script>
+  </body>
+</html>
